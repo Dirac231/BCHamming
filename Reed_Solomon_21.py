@@ -66,7 +66,6 @@ qc.draw(output='mpl', scale=0.5)
 extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
 tqc = transpile(qc, extended_stabilizer_simulator)
 results = extended_stabilizer_simulator.run(tqc, shots=1).result()
-counts = results.get_counts(0)
 print('This succeeded?: {}'.format(results.success))
 
 
