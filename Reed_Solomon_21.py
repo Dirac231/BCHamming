@@ -60,7 +60,6 @@ def decoder_RS(aux):
     return aux
 
 qc = decoder_RS(encoder_RS(initial_state))
-qc.draw(output='mpl', scale=0.5)
 
 #TESTING THE EXTENDED STABILIZER METHOD
 extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
