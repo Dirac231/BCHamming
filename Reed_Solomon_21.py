@@ -1,11 +1,10 @@
 from qiskit import *
 from matplotlib import *
 from math import pi
-from qiskit.providers.aer.noise import NoiseModel
-from qiskit.providers.aer.noise.errors import pauli_error, depolarizing_error
+from numpy import random
 from qiskit.providers.aer import AerSimulator
 
-initial_state = [0,1,1]
+initial_state = [1,1,1]
 
 #QTF IMPLEMENTATION
 
@@ -44,6 +43,12 @@ def encoder_RS(initial_state):
     inverse_qft(qc, 21)
     return qc
 
+#Applies a random z-error to one of the first 21 Qbits
+def noisey(circ):
+    circ.z(random.randint(21))
+    return circ    
+       
+
 #DECODING takes the encoding circuit and returns the decoding one
 
 def decoder_RS(aux):
@@ -59,12 +64,12 @@ def decoder_RS(aux):
     aux = inverse_qft(aux, 21)
     return aux
 
-qc = decoder_RS(encoder_RS(initial_state))
+qc = decoder_RS(noisey(encoder_RS(initial_state)))
 
 #TESTING THE EXTENDED STABILIZER METHOD
 extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
 tqc = transpile(qc, extended_stabilizer_simulator)
 results = extended_stabilizer_simulator.run(tqc, shots=1).result()
+counts=results.get_counts(0)
 print('This succeeded?: {}'.format(results.success))
-
 
