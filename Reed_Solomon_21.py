@@ -1,4 +1,5 @@
 from qiskit import *
+import unireedsolomon as rs
 from matplotlib import *
 from math import pi, floor
 import numpy as np
@@ -6,38 +7,55 @@ from qiskit.providers.aer.noise import NoiseModel
 from qiskit.providers.aer.noise.errors import pauli_error, depolarizing_error
 from qiskit.providers.aer import AerSimulator
 
+#PARAMETERS SETUP
+
 #Parameters of the classical code used to generate the optimal quantum code.
 #The code is built so that everything is a function of k_cl, the order of the finite field.
 
 k_cl = int(input("Lenght of message: "))#Order of the finite field in terms of powers of 2
 delta = floor((2**k_cl-1)/2+2) #Classical optimal minimum distance of the code
 K = (2**k_cl) - delta #Number of classical bits sent
-
+coder_cl = rs.RSCoder(2**k_cl -1, K)
 #Construction of the Quantum parameters, ENC = Total encoding Qbits needed, SENT = Sent Qbits
 ENC = k_cl*(2**k_cl - 1)
 SENT = k_cl*(2**k_cl - 1 - 2*K)
 
-
 print("-------------------------------------------")
 print("Encoding Qbits: ", ENC)
 print("Sent Qbits: ", SENT)
-print("Maximum error-correcting: ", floor((K)/2), "/Symbol")
+print("K = ", K)
+print("Optimal distance: ", delta)
+print("Maximum error-correcting: ", (K)/2, "/Symbol")
 print("Order of the finite field: ", 2**k_cl)
 print("-------------------------------------------")
 
+#--------------------------------------------------------------------------------------
+
+#LOAD THE MESSAGE FROM A FILE
+
 initial_state = np.loadtxt('states.txt')
 if (len(initial_state) != SENT):
-    print("Error, insufficient number of states (", len(initial_state), "VS", SENT, ")")
-    exit()
+    print("Error: different number of states in the file (", len(initial_state), "VS", SENT, ")")
 
+#--------------------------------------------------------------------------------------
+
+#GIVEN THE SINDROME, BUILD THE ORIGINAL MESSAGE
 
 def Simulate(circuit):
+    cr = ClassicalRegister(SENT)    #Sindrome information
+    circuit.add_register(cr)
+    for i in range(0, k_cl):
+        circuit.measure(i,cr[i])
+    for i in range(k_cl*(K+1), ENC):
+        circuit.measure(i, cr[i-k_cl*K])
     extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
     tcircuit = transpile(circuit, extended_stabilizer_simulator)
     results = extended_stabilizer_simulator.run(tqc, shots=1).result()
     counts=results.get_counts(0)
     print('This succeeded?: {}'.format(results.success))
-    return
+    return 1
+
+#--------------------------------------------------------------------------------------
 
 #QTF IMPLEMENTATION
 
@@ -65,10 +83,12 @@ def inverse_qft(circuit, n):
     circuit.append(invqft_circ, circuit.qubits[:n])
     return circuit
 
+#------------------------------------------------------------------------------------
+
 #ENCODING: takes a message and return the circuit that encodes it
 
 def encoder_RS(initial_state):
-    qc = QuantumCircuit(ENC + 2*k_cl*K)
+    qc = QuantumCircuit(ENC + 2*k_cl*K, k_cl*(K+1))
     for i in range(0,k_cl):
         qc.initialize(initial_state[i], i) 
     for i in range(k_cl*(K + 1), ENC-k_cl*K):
@@ -78,11 +98,12 @@ def encoder_RS(initial_state):
     inverse_qft(qc, ENC)
     return qc
        
+#------------------------------------------------------------------------------------
 
 #DECODING takes the encoding circuit and returns the decoding one
 
 def decoder_RS(aux):
-    aux = qft(aux, ENC)
+    #aux = qft(aux, ENC)
     for i in range(k_cl+1,k_cl*(K+1)+1):
         aux.cx(i-1, i+ENC-k_cl-1)
     for i in range(ENC -k_cl*K, ENC):
@@ -91,10 +112,22 @@ def decoder_RS(aux):
         aux.cx(i+1, i+ENC-k_cl+1)
     for i in range(ENC -k_cl*K-1, ENC-1):
         aux.h(i+1)
-    aux = inverse_qft(aux, ENC)
+    #aux = inverse_qft(aux, ENC)
     return aux
 
-def measure_syndrome_BF(circuit):
-    for i in range(ENC, ENC+k_cl*K):
-        circuit.measure(i,i)
-    return
+#------------------------------------------------------------------------------------
+    
+    circuit = decoder_RS(encoder_RS(initial_state))
+    cr = ClassicalRegister(SENT)
+    circuit.add_register(cr)
+    for i in range(0, k_cl):
+        circuit.measure(i,cr[i])
+    for i in range(k_cl*(K+1), ENC):
+        circuit.measure(i, cr[i-k_cl*K])
+        
+    extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
+    tcircuit = transpile(circuit, extended_stabilizer_simulator)
+    results = extended_stabilizer_simulator.run(tcircuit, shots=1).result()
+    counts=results.get_counts(0)
+    print('This succeeded?: {}'.format(results.success))
+    circuit.draw(output='mpl')
