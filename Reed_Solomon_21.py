@@ -9,9 +9,9 @@ from qiskit.providers.aer import AerSimulator
 #Parameters of the classical code used to generate the optimal quantum code.
 #The code is built so that everything is a function of k_cl, the order of the finite field.
 
-k_cl = 3 #Order of the finite field in terms of powers of 2
+k_cl = int(input("Lenght of message: "))#Order of the finite field in terms of powers of 2
 delta = floor((2**k_cl-1)/2+2) #Classical optimal minimum distance of the code
-K = 2**k_cl - delta #Number of classical bits sent
+K = (2**k_cl) - delta #Number of classical bits sent
 
 #Construction of the Quantum parameters, ENC = Total encoding Qbits needed, SENT = Sent Qbits
 ENC = k_cl*(2**k_cl - 1)
@@ -21,13 +21,15 @@ SENT = k_cl*(2**k_cl - 1 - 2*K)
 print("-------------------------------------------")
 print("Encoding Qbits: ", ENC)
 print("Sent Qbits: ", SENT)
-print("Maximum error-correcting: ", floor((K)/2))
+print("Maximum error-correcting: ", floor((K)/2), "/Symbol")
 print("Order of the finite field: ", 2**k_cl)
 print("-------------------------------------------")
 
 initial_state = np.loadtxt('states.txt')
 if (len(initial_state) != SENT):
     print("Error, insufficient number of states (", len(initial_state), "VS", SENT, ")")
+    exit()
+
 
 def Simulate(circuit):
     extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
@@ -82,17 +84,15 @@ def encoder_RS(initial_state):
 def decoder_RS(aux):
     aux = qft(aux, ENC)
     for i in range(k_cl+1,k_cl*(K+1)+1):
-        aux.cx(i, i+ENC-k_cl)
-    for i in range(ENC -k_cl*K-1, ENC-1):
+        aux.cx(i-1, i+ENC-k_cl-1)
+    for i in range(ENC -k_cl*K, ENC):
         aux.h(i)
     for i in range(ENC-k_cl*K-1,ENC-1):
-        aux.cx(i, i+ENC-k_cl)
+        aux.cx(i+1, i+ENC-k_cl+1)
     for i in range(ENC -k_cl*K-1, ENC-1):
-        aux.h(i)
+        aux.h(i+1)
     aux = inverse_qft(aux, ENC)
     return aux
-
-#Measurement function for the bit flip syndrome
 
 def measure_syndrome_BF(circuit):
     for i in range(ENC, ENC+k_cl*K):
