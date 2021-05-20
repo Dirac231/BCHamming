@@ -6,6 +6,7 @@ import numpy as np
 from qiskit.providers.aer.noise import NoiseModel
 from qiskit.providers.aer.noise.errors import pauli_error, depolarizing_error
 from qiskit.providers.aer import AerSimulator
+from qiskit.visualization import plot_histogram
 
 #PARAMETERS SETUP
 
@@ -25,7 +26,7 @@ print("Encoding Qbits: ", ENC)
 print("Sent Qbits: ", SENT)
 print("K = ", K)
 print("Optimal distance: ", delta)
-print("Maximum error-correcting: ", (K)/2, "/Symbol")
+print("Maximum error-correcting: ", floor((K)/2), "/Symbol")
 print("Order of the finite field: ", 2**k_cl)
 print("-------------------------------------------")
 
@@ -42,12 +43,9 @@ if (len(initial_state) != SENT):
 #GIVEN THE SINDROME, BUILD THE ORIGINAL MESSAGE
 
 def Simulate(circuit):
-    cr = ClassicalRegister(SENT)    #Sindrome information
-    circuit.add_register(cr)
-    for i in range(0, k_cl):
-        circuit.measure(i,cr[i])
-    for i in range(k_cl*(K+1), ENC):
-        circuit.measure(i, cr[i-k_cl*K])
+    cr = ClassicalRegister(2*k_cl*K)
+    for i in range(0, 2*k_cl*K):
+        circuit.measure(ENC+i,cr[i])
     extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
     tcircuit = transpile(circuit, extended_stabilizer_simulator)
     results = extended_stabilizer_simulator.run(tqc, shots=1).result()
@@ -88,7 +86,7 @@ def inverse_qft(circuit, n):
 #ENCODING: takes a message and return the circuit that encodes it
 
 def encoder_RS(initial_state):
-    qc = QuantumCircuit(ENC + 2*k_cl*K, k_cl*(K+1))
+    qc = QuantumCircuit(ENC + 2*k_cl*K)
     for i in range(0,k_cl):
         qc.initialize(initial_state[i], i) 
     for i in range(k_cl*(K + 1), ENC-k_cl*K):
@@ -103,7 +101,7 @@ def encoder_RS(initial_state):
 #DECODING takes the encoding circuit and returns the decoding one
 
 def decoder_RS(aux):
-    #aux = qft(aux, ENC)
+    aux = qft(aux, ENC)
     for i in range(k_cl+1,k_cl*(K+1)+1):
         aux.cx(i-1, i+ENC-k_cl-1)
     for i in range(ENC -k_cl*K, ENC):
@@ -112,22 +110,22 @@ def decoder_RS(aux):
         aux.cx(i+1, i+ENC-k_cl+1)
     for i in range(ENC -k_cl*K-1, ENC-1):
         aux.h(i+1)
-    #aux = inverse_qft(aux, ENC)
+    aux = inverse_qft(aux, ENC)
     return aux
 
 #------------------------------------------------------------------------------------
     
-    circuit = decoder_RS(encoder_RS(initial_state))
-    cr = ClassicalRegister(SENT)
-    circuit.add_register(cr)
-    for i in range(0, k_cl):
-        circuit.measure(i,cr[i])
-    for i in range(k_cl*(K+1), ENC):
-        circuit.measure(i, cr[i-k_cl*K])
-        
-    extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
-    tcircuit = transpile(circuit, extended_stabilizer_simulator)
-    results = extended_stabilizer_simulator.run(tcircuit, shots=1).result()
-    counts=results.get_counts(0)
-    print('This succeeded?: {}'.format(results.success))
-    circuit.draw(output='mpl')
+circ = decoder_RS(encoder_RS(initial_state))
+
+cr = ClassicalRegister(2*k_cl*K, 'classic')
+circ.add_register(cr)
+for i in range(0, 2*k_cl*K):
+    circ.measure(ENC+i,cr[i])
+    
+extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
+
+# Transpile circuit for backend
+tcirc = transpile(circ, extended_stabilizer_simulator)
+
+extended_stabilizer_result = extended_stabilizer_simulator.run(tcirc, shots=1).result()
+print('This succeeded?: {}'.format(extended_stabilizer_result.success))
