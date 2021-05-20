@@ -21,7 +21,7 @@ SENT = k_cl*(2**k_cl - 1 - 2*K)
 print("-------------------------------------------")
 print("Encoding Qbits: ", ENC)
 print("Sent Qbits: ", SENT)
-print("Maximum error-correcting: ", (K+1)/2)
+print("Maximum error-correcting: ", floor((K)/2))
 print("Order of the finite field: ", 2**k_cl)
 print("-------------------------------------------")
 
