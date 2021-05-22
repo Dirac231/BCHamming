@@ -62,6 +62,32 @@ def inverse_qft(circuit, n):
     invqft_circ = qft_circ.inverse()
     circuit.append(invqft_circ, circuit.qubits[:n])
     return circuit
+#-----------------------------------------------------------------------------------
+#Measure functions
+
+def measure_syndrome(circ):
+    cr = ClassicalRegister(2*k_cl*K, 'syndrome')
+    circ.add_register(cr)
+    for i in range(0, 2*k_cl*K):
+        circ.measure(ENC+i,cr[i])
+    return circ
+
+def measure_qbits(circ):
+    cr = ClassicalRegister(k_cl, 'out')
+    circ.add_register(cr)
+    for i in range(0,k_cl):
+        circ.measure(i, cr[i]) 
+    for i in range(k_cl*(K + 1), ENC-k_cl*K):
+        circ.measure(i, cr[i]) 
+    return circ
+
+def measure_all(circ):
+    cr = ClassicalRegister(ENC, 'syndrome')
+    circ.add_register(cr)
+    for i in range(0, ENC):
+        circ.measure(i,cr[i])
+    return circ
+    
 
 #------------------------------------------------------------------------------------
 
@@ -93,16 +119,17 @@ def decoder_RS(aux):
     for i in range(ENC -k_cl*K-1, ENC-1):
         aux.h(i+1)
     aux = inverse_qft(aux, ENC)
+    
     return aux
 
+
+    
 #------------------------------------------------------------------------------------
     
 circ = decoder_RS(encoder_RS(initial_state))
-
-cr = ClassicalRegister(2*k_cl*K, 'classic')
-circ.add_register(cr)
-for i in range(0, 2*k_cl*K):
-    circ.measure(ENC+i,cr[i])
-    
+measure_all(circ)
 result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state')).result()
 print('This succeeded?: {}'.format(result.success))
+print("Time taken: {} sec".format(result.time_taken))
+counts = result.get_counts(0)
+counts
