@@ -3,10 +3,7 @@ import unireedsolomon as rs
 from matplotlib import *
 from math import pi, floor
 import numpy as np
-from qiskit.providers.aer.noise import NoiseModel
-from qiskit.providers.aer.noise.errors import pauli_error, depolarizing_error
 from qiskit.providers.aer import AerSimulator
-from qiskit.visualization import plot_histogram
 
 #PARAMETERS SETUP
 
@@ -17,14 +14,13 @@ k_cl = int(input("Lenght of message: "))#Order of the finite field in terms of p
 delta = floor((2**k_cl-1)/2+2) #Classical optimal minimum distance of the code
 K = (2**k_cl) - delta #Number of classical bits sent
 coder_cl = rs.RSCoder(2**k_cl -1, K)
+SENT = k_cl*(2**k_cl - 1 - 2*K)
 #Construction of the Quantum parameters, ENC = Total encoding Qbits needed, SENT = Sent Qbits
 ENC = k_cl*(2**k_cl - 1)
-SENT = k_cl*(2**k_cl - 1 - 2*K)
 
 print("-------------------------------------------")
 print("Encoding Qbits: ", ENC)
-print("Sent Qbits: ", SENT)
-print("K = ", K)
+print("Sent Qbits: ", k_cl)
 print("Optimal distance: ", delta)
 print("Maximum error-correcting: ", floor((K)/2), "/Symbol")
 print("Order of the finite field: ", 2**k_cl)
@@ -35,23 +31,9 @@ print("-------------------------------------------")
 #LOAD THE MESSAGE FROM A FILE
 
 initial_state = np.loadtxt('states.txt')
-if (len(initial_state) != SENT):
-    print("Error: different number of states in the file (", len(initial_state), "VS", SENT, ")")
+if (len(initial_state) != k_cl):
+    print("Error: different number of states in the file (", len(initial_state), "VS", k_cl, ")")
 
-#--------------------------------------------------------------------------------------
-
-#GIVEN THE SINDROME, BUILD THE ORIGINAL MESSAGE
-
-def Simulate(circuit):
-    cr = ClassicalRegister(2*k_cl*K)
-    for i in range(0, 2*k_cl*K):
-        circuit.measure(ENC+i,cr[i])
-    extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
-    tcircuit = transpile(circuit, extended_stabilizer_simulator)
-    results = extended_stabilizer_simulator.run(tqc, shots=1).result()
-    counts=results.get_counts(0)
-    print('This succeeded?: {}'.format(results.success))
-    return 1
 
 #--------------------------------------------------------------------------------------
 
@@ -122,10 +104,5 @@ circ.add_register(cr)
 for i in range(0, 2*k_cl*K):
     circ.measure(ENC+i,cr[i])
     
-extended_stabilizer_simulator = AerSimulator(method='extended_stabilizer')
-
-# Transpile circuit for backend
-tcirc = transpile(circ, extended_stabilizer_simulator)
-
-extended_stabilizer_result = extended_stabilizer_simulator.run(tcirc, shots=1).result()
-print('This succeeded?: {}'.format(extended_stabilizer_result.success))
+result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state')).result()
+print('This succeeded?: {}'.format(result.success))
