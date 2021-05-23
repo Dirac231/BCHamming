@@ -3,6 +3,7 @@ import unireedsolomon as rs
 from matplotlib import *
 from math import pi, floor
 import numpy as np
+from Berlekamp_Massey import *
 from qiskit.providers.aer import AerSimulator
 
 #PARAMETERS SETUP
@@ -133,3 +134,23 @@ print("Time taken: {} sec".format(result.time_taken))
 counts = list(result.get_counts(0))  #get the results in a list
 BFsyndrome = (counts[0])[:9]         #bit flip syndrome list
 PFsyndrome = (counts[0])[9:]         #phase flip syndrome list
+
+
+#------------------------------------------------------------------------------------
+
+#RECOVERY FUNCTION: APPLY Sx IF THERE IS A BIT FLIP AND Sz WITH PHASE FLIP
+
+def recovery(qc):
+    bf = berlekamp_massey(BFsyndrome)
+    pf = berlekamp_massey(PFsyndrome)
+    bf.extend([0] * (ENC - len(bf)))
+    pf.extend([0] * (ENC - len(pf)))
+    for i in range(ENC):
+        if bf[i] == 1:
+            qc.sx(i)
+        if pf[i] == 1:
+            qc.sz(i)
+    return qc
+
+
+#------------------------------------------------------------------------------------
