@@ -1,5 +1,4 @@
 from qiskit import *
-import unireedsolomon as rs
 from matplotlib import *
 from math import pi, floor
 import numpy as np
@@ -14,7 +13,6 @@ from qiskit.providers.aer import AerSimulator
 k_cl = int(input("Lenght of message: "))#Order of the finite field in terms of powers of 2
 delta = floor((2**k_cl-1)/2+2) #Classical optimal minimum distance of the code
 K = (2**k_cl) - delta #Number of classical bits sent
-coder_cl = rs.RSCoder(2**k_cl -1, K)
 SENT = k_cl*(2**k_cl - 1 - 2*K)
 #Construction of the Quantum parameters, ENC = Total encoding Qbits needed, SENT = Sent Qbits
 ENC = k_cl*(2**k_cl - 1)
@@ -120,37 +118,35 @@ def decoder_RS(aux):
         aux.h(i+1)
     aux = inverse_qft(aux, ENC)
     return aux
-    
-#------------------------------------------------------------------------------------
-
-circ = decoder_RS(encoder_RS(initial_state))
-measure_syndrome(circ)
-
-#simulator
-result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state')).result()
-print('This succeeded?: {}'.format(result.success))
-print("Time taken: {} sec".format(result.time_taken))
-
-counts = list(result.get_counts(0))  #get the results in a list
-BFsyndrome = (counts[0])[:9]         #bit flip syndrome list
-PFsyndrome = (counts[0])[9:]         #phase flip syndrome list
-
-
 #------------------------------------------------------------------------------------
 
 #RECOVERY FUNCTION: APPLY Sx IF THERE IS A BIT FLIP AND Sz WITH PHASE FLIP
 
-def recovery(qc):
+def simulate():
+    circ = decoder_RS(encoder_RS(initial_state))
+    measure_syndrome(circ)
+    #simulator
+    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state')).result()
+    print('This succeeded?: {}'.format(result.success))
+    print("Time taken: {} sec".format(result.time_taken))
+
+    counts = list(result.get_counts(0))  #get the results in a list
+    BFsyndrome = (counts[0])[:9]         #bit flip syndrome list
+    PFsyndrome = (counts[0])[9:]         #phase flip syndrome list
     bf = berlekamp_massey(BFsyndrome)
     pf = berlekamp_massey(PFsyndrome)
     bf.extend([0] * (ENC - len(bf)))
     pf.extend([0] * (ENC - len(pf)))
     for i in range(ENC):
         if bf[i] == 1:
-            qc.sx(i)
+            circ.x(i)
         if pf[i] == 1:
-            qc.sz(i)
-    return qc
-
-
+            circ.z(i)
+    print("Berlekamp Massey found: ", bf)
+    print("Bit fip Syndrome: ", BFsyndrome)
+    print("Phase flip Syndrome: ", PFsyndrome)
+    return circ
 #------------------------------------------------------------------------------------
+
+qc = simulate()
+qc.draw(output='mpl')
