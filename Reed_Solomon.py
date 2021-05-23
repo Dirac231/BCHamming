@@ -1,4 +1,5 @@
 from qiskit import *
+import unireedsolomon as rs
 from matplotlib import *
 from math import pi, floor
 import numpy as np
@@ -13,8 +14,8 @@ from qiskit.providers.aer import AerSimulator
 k_cl = int(input("Lenght of message: "))#Order of the finite field in terms of powers of 2
 delta = floor((2**k_cl-1)/2+2) #Classical optimal minimum distance of the code
 K = (2**k_cl) - delta #Number of classical bits sent
-SENT = k_cl*(2**k_cl - 1 - 2*K)
-#Construction of the Quantum parameters, ENC = Total encoding Qbits needed, SENT = Sent Qbits
+coder_cl = rs.RSCoder(2**k_cl -1, K)
+#Construction of the Quantum parameters, ENC = Total encoding Qbits needed
 ENC = k_cl*(2**k_cl - 1)
 
 print("-------------------------------------------")
@@ -22,8 +23,8 @@ print("Encoding Qbits: ", ENC)
 print("Sent Qbits: ", k_cl)
 print("Optimal distance: ", delta)
 print("Maximum error-correcting: ", floor((K)/2), "/Symbol")
-print("Order of the finite field: ", 2**k_cl)
 print("-------------------------------------------")
+
 
 #--------------------------------------------------------------------------------------
 
@@ -124,15 +125,15 @@ def decoder_RS(aux):
 
 def simulate():
     circ = decoder_RS(encoder_RS(initial_state))
-    measure_syndrome(circ)
+    circ = measure_syndrome(circ)
     #simulator
     result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state')).result()
-    print('This succeeded?: {}'.format(result.success))
+    print('Simulation Success: {}'.format(result.success))
     print("Time taken: {} sec".format(result.time_taken))
 
     counts = list(result.get_counts(0))  #get the results in a list
-    BFsyndrome = (counts[0])[:9]         #bit flip syndrome list
-    PFsyndrome = (counts[0])[9:]         #phase flip syndrome list
+    BFsyndrome = (counts[0])[:k_cl*K]         #bit flip syndrome string
+    PFsyndrome = (counts[0])[k_cl*K:]         #phase flip syndrome string
     bf = berlekamp_massey(BFsyndrome)
     pf = berlekamp_massey(PFsyndrome)
     bf.extend([0] * (ENC - len(bf)))
@@ -142,7 +143,10 @@ def simulate():
             circ.x(i)
         if pf[i] == 1:
             circ.z(i)
-    print("Berlekamp Massey found: ", bf)
+    print("----------------------------------------")
+    print("Error locator Bit-Flip: ", bf)
+    print(berlekamp_massey(BFsyndrome))
+    print("Error locator Phase-Flip: ", pf)
     print("Bit fip Syndrome: ", BFsyndrome)
     print("Phase flip Syndrome: ", PFsyndrome)
     return circ
