@@ -82,7 +82,7 @@ def measure_qbits(circ):
     return circ
 
 def measure_all(circ):
-    cr = ClassicalRegister(ENC, 'syndrome')
+    cr = ClassicalRegister(ENC, 'encoded')
     circ.add_register(cr)
     for i in range(0, ENC):
         circ.measure(i,cr[i])
@@ -108,6 +108,9 @@ def encoder_RS(initial_state):
 
 #DECODING takes the encoding circuit and returns the decoding one
 
+BFsyndrome = []
+PFsyndrome = []
+
 def decoder_RS(aux):
     aux = qft(aux, ENC)
     for i in range(k_cl+1,k_cl*(K+1)+1):
@@ -119,7 +122,6 @@ def decoder_RS(aux):
     for i in range(ENC -k_cl*K-1, ENC-1):
         aux.h(i+1)
     aux = inverse_qft(aux, ENC)
-    
     return aux
 
 
@@ -127,9 +129,10 @@ def decoder_RS(aux):
 #------------------------------------------------------------------------------------
     
 circ = decoder_RS(encoder_RS(initial_state))
-measure_all(circ)
+measure_syndrome(circ)
 result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state')).result()
 print('This succeeded?: {}'.format(result.success))
 print("Time taken: {} sec".format(result.time_taken))
-counts = result.get_counts(0)
-counts
+counts = list(result.get_counts(0))
+BFsyndrome = (counts[0])[:9]
+PFsyndrome = (counts[0])[9:]
