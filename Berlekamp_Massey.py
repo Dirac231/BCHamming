@@ -33,7 +33,7 @@ def berlekamp_massey(x:list):
         for j in range(len(cur)):
             c[j] = (c[j]+cur[j]) % mod
         if (i-lf+len(ls)) >= len(cur):
-            ls, lf, ld = cur, i, (t-x[i])%mod
+            ls, lf, ld = cur, i, (t-int(x[i]))%mod
         cur = c
     for i in cur:
         i = (i % mod + mod) % mod
