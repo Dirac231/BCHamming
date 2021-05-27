@@ -33,8 +33,9 @@ def HammingCircuit(N, name="Hamming", ancillas=1):
     for i in range(2**N):
         prefix = "p" if is_power_2(i) else "d"
         registers.append(QuantumRegister(1, prefix+num_to_binary(i, N)))
-
-    circuit=QuantumCircuit(*registers, QuantumRegister(N*ancillas,'anc')) #circuit already with ancillas
+    if ancillas>0:
+        registers.append(QuantumRegister(N*ancillas,'anc'))
+    circuit=QuantumCircuit(*registers) #circuit already with ancillas
     circuit.N=N
     return circuit
 
@@ -53,7 +54,7 @@ def swapper(N):
         source -= 1
         target -= 1
     
-    return qc.to_instruction()
+    return qc.to_gate()
 
 
 def encoder(N):
@@ -65,16 +66,16 @@ def encoder(N):
         p = 2**p
         [qc.cx(i, p) for i in range(2**N) if (i & p) == p and i != p]
 
-    return qc.to_instruction()
+    return qc.to_gate()
 
 
 def hamming_encode(N):
     """Returns a hamming encoding circuit"""
     qc = HammingCircuit(N)
-    qc.append(swapper(N), list(range(2**N)))
-    qc.append(encoder(N), list(range(2**N)))
+    qc.append(swapper(N), [*range(2**N)])
+    qc.append(encoder(N), [*range(2**N)])
     
-    return qc.to_instruction()
+    return qc.to_gate()
 
 
 def xor(N):
