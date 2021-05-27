@@ -54,7 +54,8 @@ def swapper(N):
         source -= 1
         target -= 1
     
-    return qc.to_gate()
+
+    return qc.to_gate(label="Swapper")
 
 
 def encoder(N):
@@ -66,7 +67,8 @@ def encoder(N):
         p = 2**p
         [qc.cx(i, p) for i in range(2**N) if (i & p) == p and i != p]
 
-    return qc.to_gate()
+
+    return qc.to_gate(label="Encoder")
 
 
 def hamming_encode(N):
@@ -75,8 +77,17 @@ def hamming_encode(N):
     qc.append(swapper(N), [*range(2**N)])
     qc.append(encoder(N), [*range(2**N)])
     
-    return qc.to_gate()
 
+    return qc.to_gate(label="Hamming encode")
+
+
+def bit_phase_encoder(N, name="bit phase encoder"):
+    prova = QuantumCircuit(2**N)
+    prova.append(hamming_encode(N), list(range(2**N)))
+    prova.h(list(range(2**N)))
+
+    prova.append(hamming_encode(N), list(range(2**N)))
+    return prova.to_gate(label=name)
 
 def xor(N):
     #This is the gate that calculates the xor of all the position with ones, this gives the position of the faulty qbit
