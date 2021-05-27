@@ -34,7 +34,7 @@ def HammingCircuit(N, name="Hamming", ancillas=1):
         prefix = "p" if is_power_2(i) else "d"
         registers.append(QuantumRegister(1, prefix+num_to_binary(i, N)))
 
-    circuit=QuantumCircuit(*registers, QuantumRegister(N*ancillas,'anc')) #circuit already with ancillas
+    circuit=QuantumCircuit(*registers) #circuit already with ancillas
     circuit.N=N
     return circuit
 
@@ -53,7 +53,7 @@ def swapper(N):
         source -= 1
         target -= 1
     
-    return qc.to_instruction()
+    return qc.to_gate(label="Swapper")
 
 
 def encoder(N):
@@ -65,7 +65,7 @@ def encoder(N):
         p = 2**p
         [qc.cx(i, p) for i in range(2**N) if (i & p) == p and i != p]
 
-    return qc.to_instruction()
+    return qc.to_gate(label="Encoder")
 
 
 def hamming_encode(N):
@@ -74,8 +74,16 @@ def hamming_encode(N):
     qc.append(swapper(N), list(range(2**N)))
     qc.append(encoder(N), list(range(2**N)))
     
-    return qc.to_instruction()
+    return qc.to_gate(label="Hamming encode")
 
+
+def bit_phase_encoder(N, name="bit phase encoder"):
+    prova = QuantumCircuit(2**N)
+    prova.append(hamming_encode(N), list(range(2**N)))
+    prova.h(list(range(2**N)))
+
+    prova.append(hamming_encode(N), list(range(2**N)))
+    return prova.to_gate(label=name)
 
 def xor(N):
     #This is the gate that calculates the xor of all the position with ones, this gives the position of the faulty qbit
