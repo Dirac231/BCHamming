@@ -73,18 +73,19 @@ def encoder(N):
 
 def hamming_encode(N):
     """Returns a hamming encoding circuit"""
-    qc = HammingCircuit(N)
+    qc = HammingCircuit(N, ancillas=0)
     qc.append(swapper(N), [*range(2**N)])
     qc.append(encoder(N), [*range(2**N)])
     
-
+    qc.draw()
     return qc.to_gate(label="Hamming encode")
 
 
 def bit_phase_encoder(N, name="bit phase encoder"):
     prova = QuantumCircuit(2**N)
     prova.append(hamming_encode(N), list(range(2**N)))
-    prova.h(list(range(2**N)))
+
+    prova.h(list(range(2**N - N - 1)))
 
     prova.append(hamming_encode(N), list(range(2**N)))
     return prova.to_gate(label=name)
