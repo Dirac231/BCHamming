@@ -27,19 +27,33 @@ def is_power_2(n):
     return n & (n-1) == 0
 
 
-def HammingCircuit(N, name="Hamming", ancillas=1):
-    """Constructs a circuit with the qubits named in Hamming fashion"""
-    registers = []
+def HammingCircuit(N, ClassicalRegisters=None, name=None, ancillas=None):
+    """
+    -Returns a circuit with just the qbits labeled as the parity and signal
+    -it gives you a circuit with 2^N qbits of (message + redundancy)
+    -it can have classical registers if you want set ClassicalRegisters=True, if given a int "n" it will have 
+    n classical registers
+    by default it will have N ancillas, if specified it will have a number ancillas"""
+    
+    if ancillas is None: ancillas = 2*N-1
+    registers=[]
     for i in range(2**N):
-        prefix = "p" if is_power_2(i) else "d"
-        registers.append(QuantumRegister(1, prefix+num_to_binary(i, N)))
-    if ancillas>0:
-        registers.append(QuantumRegister(N*ancillas,'anc'))
+        prefix='s' #s stands for signal
+        if i==0 or np.log2(i)==int(np.log2(i)): prefix='p' #c stands for parity
+        registers.append(QuantumRegister(1,prefix+num_to_binary(i, N)))
+    if ClassicalRegisters!=None: 
+        if ClassicalRegisters==True: registers.append(ClassicalRegister(2**N + ancillas))
+        else: registers.append(ClassicalRegister(ClassicalRegisters))
+
+    if ancillas > 0: registers.append(QuantumRegister(ancillas))
     circuit=QuantumCircuit(*registers) #circuit already with ancillas
+    #circit=QuantumCircuit(*registers)
     circuit.N=N
+    if name is not None: circuit.name = name
     return circuit
 
-def swapper(N):
+
+def Swapper(N):
     """
     Circuit that shifts the every qubit right by the number of
     power-of-two qubits before it
@@ -58,7 +72,7 @@ def swapper(N):
     return qc.to_gate(label="Swapper")
 
 
-def encoder(N):
+def Encoder(N):
     """Encoder for the quantum hamming code"""
 
     qc = HammingCircuit(N, name="Encoder", ancillas=0)
@@ -71,28 +85,100 @@ def encoder(N):
     return qc.to_gate(label="Encoder")
 
 
-def hamming_encode(N):
-    """Returns a hamming encoding circuit"""
+def Hamming_phase_encoder(N, name="phase encoder"):
     qc = HammingCircuit(N, ancillas=0)
-    qc.append(swapper(N), [*range(2**N)])
-    qc.append(encoder(N), [*range(2**N)])
+    qc.append(Hamming_bit_encoder(N), list(range(2**N)))
+    qc.h(list(range(2**N)))
     
-    qc.draw()
-    return qc.to_gate(label="Hamming encode")
+    return qc.to_gate(label=name)
 
 
-def bit_phase_encoder(N, name="bit phase encoder"):
-    prova = QuantumCircuit(2**N)
-    prova.append(hamming_encode(N), list(range(2**N)))
+def Hamming_bit_encoder(N, name="bit encoder"):
+    qc = HammingCircuit(N, ancillas=0)
+    qc.append(Swapper(N), [*range(2**N)])
+    qc.append(Encoder(N), [*range(2**N)])
 
-    prova.h(list(range(2**N - N - 1)))
+    return qc.to_gate(label=name)
 
-    prova.append(hamming_encode(N), list(range(2**N)))
-    return prova.to_gate(label=name)
+
+def is_valid_input(kind):
+    if kind not in ["bit", "phase", "both"]:
+        message = f"The kind argument must be one of bit, phase or both, received {kind} instead"
+        warn(message, RuntimeWarning)
+        return False
+
+    return True
+
+
+def Hamming_encode(N, kind="both", name="Hamming encoder"):
+    """Returns a hamming encoding circuit
+
+    Args:
+        N (int): Order of the hamming code used, acts on 2^N qubits
+        kind (str, optional): Set to "bit" for correcting bit flip errors,
+        "phase" for correcting phase flip errors, "both" corrects both errors. 
+        Defaults to "both".
+
+    Returns:
+        Gates: The gates composing the circuit
+    """
+
+    if not is_valid_input(kind):
+        return
+
+    if kind == "both": 
+        qc = HammingCircuit(N+1, ancillas=0)
+
+    if kind in ["bit", "both"]:
+        qc.append(Hamming_bit_encoder(N), [*range(2**N)])
+        N += 1
+    if kind in ["phase", "both"]:
+        qc.append(Hamming_phase_encoder(N), [*range(2**N)])
+    
+    return qc.to_gate(label=name)
+
+
+def ReverseSwapper(N):
+    """
+    Circuit that shifts the every qubit left by the number of
+    power-of-two qubits before it
+    """
+    qc = HammingCircuit(N, ancillas=0)
+
+    source = 0
+    target = 0
+    while target < 2**N:
+        if is_power_2(target):
+            target += 1
+            continue
+        qc.swap(source, target)
+        source += 1
+        target += 1
+
+    return qc.to_gate(label="Reverse Swapper")
+
+
+def Hamming_decode(N, kind="both", name="Hamming decoder"):
+    if not is_valid_input(kind):
+        return
+
+    if kind == "both": 
+        N += 1
+    qc = HammingCircuit(N, ancillas=2*N-1)
+
+    if kind != "bit":
+        qc.h(list(range(2**N)))
+    qc.append(Hamming_bit_decoder(N), [*range(2**N+N)])
+
+    if kind == "both":
+        bits = [*list(range(2**(N-1))), *list(range(2**N + N, 2**N + 2*N - 1))]
+        qc.append(Hamming_bit_decoder(N-1), bits)
+    
+    return qc.to_gate(label=name)
 
 def xor(N):
     #This is the gate that calculates the xor of all the position with ones, this gives the position of the faulty qbit
-    circ=HammingCircuit(N)
+    circ=HammingCircuit(N, ancillas=N)
     nqubits=2**N
     for i in range(1,nqubits):
         for j in range(0,N):
@@ -101,7 +187,7 @@ def xor(N):
 
 def correct(N):
     #This is the gate that corrects the faulty qbit
-    circ=HammingCircuit(N)
+    circ=HammingCircuit(N, ancillas=N)
     nqubits=2**N
     count=np.zeros(N)
     for i in range(1,nqubits):
@@ -113,11 +199,12 @@ def correct(N):
         circ.mct([*range(nqubits,nqubits+N)],i)
     return circ.to_gate(label='Correction')
 
-def HammingGate0(N):
+def Hamming_bit_decoder(N):
     #Hamming Gate resistant to bit-fips
-    circ=HammingCircuit(N)
+    circ=HammingCircuit(N, ancillas=N)
     circ.append(xor(N),[*range(2**N+N)])
     circ.append(correct(N),[*range(2**N+N)])
+    circ.append(ReverseSwapper(N), [*range(2**N)])
     return circ.to_gate(label='Hamming0')
 
 def HammingRedundant(n):
