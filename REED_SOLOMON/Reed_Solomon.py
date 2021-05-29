@@ -3,6 +3,7 @@ from unireedsolomon import *
 from matplotlib import *
 from math import pi, floor
 import numpy as np
+from numpy.polynomial import Polynomial
 from qiskit.providers.aer import AerSimulator
 from qiskit.circuit.library import QFT
 
@@ -161,7 +162,6 @@ def error_string(syn):
     prime = int(hex(find_prime_polynomials(c_exp=k_cl,single=True)),16)
     coder = rs.RSCoder(k1, k2, prim=prime,c_exp=k_cl)
     error_bf, sigma_bf = coder._berlekamp_massey_fast(coder._list2gfpoly(str(syn)))
-    print(sigma_bf)
     eval_tmp_bf, bf = coder._chien_search_faster(error_bf)
     Y = coder._forney(sigma_bf, eval_tmp_bf)
     Elist = []
