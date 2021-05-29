@@ -154,13 +154,11 @@ def syn_circuit(qc):
 #GIVEN THE SYNDROME RETURN THE POSITIONS OF THE ERROR USING THE CLASSICAL FUNCTION error_string
 
 def error_locator(syn):          
-
     BFsyndrome = oct(int((syn)[:k_cl*K],2))[2:]        #bit flip syndrome string in octal
     PFsyndrome = oct(int((syn)[k_cl*K:],2))[2:]        #phase flip syndrome string in octal
     #use functions in unireedsolomon to compute the error locations bf, pf
     bf = error_string(BFsyndrome)
     pf = error_string(PFsyndrome)
-
     return bf,pf
 
 
