@@ -185,7 +185,6 @@ def decoder(circ):
 
 #------------------------------------------------------------------------------------
 
-
 #SIMULATE THE ALGORITHM
 
 def send_message(initial_state):
