@@ -1,5 +1,4 @@
 from qiskit import *
-from polynomial import Polynomial
 from unireedsolomon import *
 from matplotlib import *
 from math import pi, floor
