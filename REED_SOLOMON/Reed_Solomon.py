@@ -55,6 +55,7 @@ def simulate(circ):
     return counts
 
 #------------------------------------------------------------------------------------
+
 #MEASURE FUNCTIONS
 
 def measure_encoding(circ):
