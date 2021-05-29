@@ -77,8 +77,6 @@ def encoder(initial_state):
     for i in range(ENC - k_cl*K,ENC):
         qc.h(i)
     qc.append(inv_fourier, encode_reg[:ENC])
-    qc.eval_tmp_bf(0)
-    qc.z(2)
     return qc
 
 
@@ -119,19 +117,19 @@ def error_locator(syn):
     #use functions in unireedsolomon to compute the error locations bf, pf
     bf = error_string(BFsyndrome)
     pf = error_string(PFsyndrome)
-    print("Error Locator Bit-flip: ", bf)
-    print("Error Locator Phase-flip: ", pf)
 
-    return (bf,pf)
+    return bf,pf
 
 
 #CORRECT THE ERRORS AND RETURN THE ORIGINAL MESSAGE
 
-def decoder(circ, bf, pf):
+def decoder(circ):
+    syn = get_syndrome(circ)
+    bf,pf = error_locator(syn)
     for i in range(len(bf)):
         if (bf[i] == 1):
             circ.x(i)
-    if (pf != []):
+    if (pf != ""):
         for i in range(ENC):
             circ.h(i)
         for i in range(len(pf)):
@@ -165,14 +163,31 @@ def error_string(syn):
     eval_tmp_bf, bf = coder._chien_search_faster(error_bf)
     Y = coder._forney(sigma_bf, eval_tmp_bf)
     Elist = []
-    if len(Y) >= len(bf): # failsafe: if the number of erratas is higher than the number of coefficients in the magnitude polynomial, we failed!
-        for i in range(coder.gf2_charac): # FIXME? is this really necessary to go to self.gf2_charac? len(rp) wouldn't be just enough? (since the goal is anyway to substract E to rp)
-            if i in bf:
-                Elist.append(Y[bf.index(i)])
-                E = Polynomial( Elist[::-1])
-                error_bits = [bin(int(i))[2:] for i in Elist]
-                s = ""
-                for i in range(len(error_bits)):                
-                    s += error_bits[i]
-                s = s[::-1]
-    return s
+    if(syn != "000"):
+
+        if len(Y) >= len(bf): # failsafe: if the number of erratas is higher than the number of coefficients in the magnitude polynomial, we failed!
+            for i in range(coder.gf2_charac): # FIXME? is this really necessary to go to self.gf2_charac? len(rp) wouldn't be just enough? (since the goal is anyway to substract E to rp)
+                if i in bf:
+                    Elist.append(Y[bf.index(i)])
+                    E = Polynomial( Elist[::-1])
+                    error_bits = [bin(int(i))[2:] for i in Elist]
+                    s = ""
+                    for i in range(len(error_bits)):                
+                        s += error_bits[i]
+                    s = s[::-1]
+        return s
+    else:
+        return ""
+
+def send_message(initial_state):
+    qc = encoder(initial_state)
+    
+    #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)#
+
+    qc = syn_circuit(qc)
+    retrieved = decoder(qc)[0]
+    print("Retrieved message: ", retrieved[:3][::-1])
+    print("Compared with: ", initial_state)
+    print("Syndrome was: ", retrieved[3:][::-1])
+
+send_message(initial_state)
