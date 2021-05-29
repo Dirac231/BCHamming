@@ -44,6 +44,17 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inve
 
 #-----------------------------------------------------------------------------------
 
+#SIMULATES THE CIRCUIT
+
+def simulate(circ):
+    #simulator
+    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=10).result()
+    print('Simulation Success: {}'.format(result.success))
+    print("Time taken: {} sec".format(result.time_taken))
+    counts = result.get_counts(0)
+    return counts
+
+#------------------------------------------------------------------------------------
 #MEASURE FUNCTIONS
 
 def measure_encoding(circ):
@@ -167,18 +178,6 @@ def decoder(circ):
 
 #------------------------------------------------------------------------------------
 
-#SIMULATE THE CIRCUIT
-
-def simulate(circ):
-    #simulator
-    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=10).result()
-    print('Simulation Success: {}'.format(result.success))
-    print("Time taken: {} sec".format(result.time_taken))
-    counts = result.get_counts(0)
-    return counts
-
-#------------------------------------------------------------------------------------
-
 def send_message(initial_state):
     qc = encoder(initial_state)
     
@@ -187,5 +186,7 @@ def send_message(initial_state):
     qc = syn_circuit(qc)
     retrieved = decoder(qc)
     print("Retrieved message: ", retrieved[:3][::-1])
-    print("Compared with: ", initial_state)
+    print("Compared with: ")
+    for i in initial_state:
+        print(i,"\n")
     print("Syndrome was: ", retrieved[3:][::-1])
