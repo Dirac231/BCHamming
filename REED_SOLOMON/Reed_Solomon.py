@@ -198,6 +198,7 @@ def send_message(initial_state):
     print("Compared with: ", initial_state)
     print("Syndrome was: ", retrieved[3:][::-1])
 
+#------------------------------------------------------------------------------------
 
 #Call the function
 send_message(initial_state)
