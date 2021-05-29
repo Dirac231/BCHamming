@@ -75,6 +75,43 @@ def get_syndrome(circ):
     syn = max(results, key=results.get)
     return syn
 
+#------------------------------------------------------------------------------------
+
+#GIVEN THE CLASSICAL SYNDROME RETURN THE POSITIONS OF THE ERRORS USING CLASSICAL BERLEKAMP-MASSEY
+
+def error_string(classical_syn):
+    k1 = int(ENC/k_cl)
+    k2 = int(((ENC-K*k_cl)/k_cl))
+    prime = int(hex(find_prime_polynomials(c_exp=k_cl,single=True)),16)
+    coder = rs.RSCoder(k1, k2, prim=prime,c_exp=k_cl)
+    error_bf, sigma_bf = coder._berlekamp_massey_fast(coder._list2gfpoly(str(classical_syn)))
+    eval_tmp_bf, bf = coder._chien_search_faster(error_bf)
+    Y = coder._forney(sigma_bf, eval_tmp_bf)
+    Elist = []
+    if(classical_syn != "000"):
+
+        if len(Y) >= len(bf): # failsafe: if the number of erratas is higher than the number of coefficients in the magnitude polynomial, we failed!
+            for i in range(coder.gf2_charac): # FIXME? is this really necessary to go to self.gf2_charac? len(rp) wouldn't be just enough? (since the goal is anyway to substract E to rp)
+                if i in bf:
+                    Elist.append(Y[bf.index(i)])
+                    E = Polynomial( Elist[::-1])
+                    error_bits = [bin(int(i))[2:] for i in Elist]
+                    s = ""
+                    for i in range(len(error_bits)):                
+                        s += error_bits[i]
+                    s = s[::-1]
+        return s
+    else:
+        return ""
+    
+#take the syndrome computed by the quantum circuit and apply error_string
+def error_locator(syn):          
+    BFsyndrome = oct(int((syn)[:k_cl*K],2))[2:]        #bit flip syndrome string
+    PFsyndrome = oct(int((syn)[k_cl*K:],2))[2:]         #phase flip syndrome string
+    #use functions in unireedsolomon to compute the error locations bf, pf
+    bf = error_string(BFsyndrome)
+    pf = error_string(PFsyndrome)
+    return bf,pf
 
 #------------------------------------------------------------------------------------
 
@@ -106,45 +143,6 @@ def syn_circuit(qc):
         qc.h(i+1)
     qc.append(inv_fourier, encode_reg[:ENC])
     return qc
-
-
-#GIVEN THE SYNDROME RETURN THE POSITIONS OF THE ERRORS USING CLASSICAL BERLEKAMP-MASSEY
-
-def error_locator(syn):          
-
-    BFsyndrome = oct(int((syn)[:k_cl*K],2))[2:]        #bit flip syndrome string
-    PFsyndrome = oct(int((syn)[k_cl*K:],2))[2:]         #phase flip syndrome string
-    #use functions in unireedsolomon to compute the error locations bf, pf
-    bf = error_string(BFsyndrome)
-    pf = error_string(PFsyndrome)
-
-    return bf,pf
-
-def error_string(syn):
-    k1 = int(ENC/k_cl)
-    k2 = int(((ENC-K*k_cl)/k_cl))
-    prime = int(hex(find_prime_polynomials(c_exp=k_cl,single=True)),16)
-    coder = rs.RSCoder(k1, k2, prim=prime,c_exp=k_cl)
-    error_bf, sigma_bf = coder._berlekamp_massey_fast(coder._list2gfpoly(str(syn)))
-    eval_tmp_bf, bf = coder._chien_search_faster(error_bf)
-    Y = coder._forney(sigma_bf, eval_tmp_bf)
-    Elist = []
-    if(syn != "000"):
-
-        if len(Y) >= len(bf): # failsafe: if the number of erratas is higher than the number of coefficients in the magnitude polynomial, we failed!
-            for i in range(coder.gf2_charac): # FIXME? is this really necessary to go to self.gf2_charac? len(rp) wouldn't be just enough? (since the goal is anyway to substract E to rp)
-                if i in bf:
-                    Elist.append(Y[bf.index(i)])
-                    E = Polynomial( Elist[::-1])
-                    error_bits = [bin(int(i))[2:] for i in Elist]
-                    s = ""
-                    for i in range(len(error_bits)):                
-                        s += error_bits[i]
-                    s = s[::-1]
-        return s
-    else:
-        return ""
-
 
 
 #CORRECT THE ERRORS AND RETURN THE ORIGINAL MESSAGE
