@@ -1,6 +1,6 @@
 from qiskit import *
 from polynomial import Polynomial
-import unireedsolomon as rs
+from unireedsolomon import *
 from matplotlib import *
 from math import pi, floor
 import numpy as np
@@ -27,7 +27,6 @@ print("Maximum error-correcting: ", floor((K)/2), "/Symbol")
 print("-------------------------------------------")
 
 
-
 #--------------------------------------------------------------------------------------
 
 #LOAD THE MESSAGE FROM A FILE
@@ -42,7 +41,6 @@ if (len(initial_state) != k_cl):
 
 fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inverse=False, insert_barriers=True, name='qft')
 inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inverse=True, insert_barriers=True, name='qft-1')
-
 
 #-----------------------------------------------------------------------------------
 
@@ -79,7 +77,7 @@ def encoder(initial_state):
     for i in range(ENC - k_cl*K,ENC):
         qc.h(i)
     qc.append(inv_fourier, encode_reg[:ENC])
-    qc.x(0)
+    qc.eval_tmp_bf(0)
     qc.z(2)
     return qc
 
@@ -111,25 +109,16 @@ def get_syndrome(circ):
     syn = max(results, key=results.get)
     return syn
 
-
 #GIVEN THE SYNDROME RETURN THE POSITIONS OF THE ERRORS USING CLASSICAL BERLEKAMP-MASSEY
 
 def error_locator(syn):          
 
-    BFsyndrome = (syn)[:k_cl*K]         #bit flip syndrome string
-    PFsyndrome = (syn)[k_cl*K:]         #phase flip syndrome string
-
-    print("-------------------------------------------")
-    print("Bit fip Syndrome: ", BFsyndrome)
-    print("Phase flip Syndrome: ", PFsyndrome)
-    
-    coder = rs.RSCoder(21,12)
-    error_bf, sigma_bf = coder._berlekamp_massey(coder._list2gfpoly(BFsyndrome))
-    error_pf, sigma_pf = coder._berlekamp_massey(coder._list2gfpoly(PFsyndrome))
-    eval_tmp_bf, bf = coder._chien_search(error_bf)
-    eval_tmp_pf, pf = coder._chien_search(error_pf)
-    #Given the syndrome return the error locator polynomial
-    
+    BFsyndrome = oct(int((syn)[:k_cl*K],2))[2:]        #bit flip syndrome string
+    PFsyndrome = oct(int((syn)[k_cl*K:],2))[2:]         #phase flip syndrome string
+    print(BFsyndrome)
+    #use functions in unireedsolomon to compute the error locations bf, pf
+    bf = error_string(BFsyndrome)
+    pf = error_string(PFsyndrome)
     print("Error Locator Bit-flip: ", bf)
     print("Error Locator Phase-flip: ", pf)
 
@@ -167,11 +156,24 @@ def simulate(circ):
     return counts
 
 #------------------------------------------------------------------------------------
-
-BFsyndrome = '001001100'
-coder = rs.RSCoder(21,12)
-error_bf, omega_bf = coder._berlekamp_massey(coder._list2gfpoly(BFsyndrome))
-print(error_bf)
-evaluator, bf = coder._chien_search(error_bf)
-print(bf)
-print('Finished')
+def error_string(syn):
+    k1 = int(ENC/k_cl)
+    k2 = int(((ENC-K*k_cl)/k_cl))
+    prime = int(hex(find_prime_polynomials(c_exp=k_cl,single=True)),16)
+    coder = rs.RSCoder(k1, k2, prim=prime,c_exp=k_cl)
+    error_bf, sigma_bf = coder._berlekamp_massey_fast(coder._list2gfpoly(str(syn)))
+    print(sigma_bf)
+    eval_tmp_bf, bf = coder._chien_search_faster(error_bf)
+    Y = coder._forney(sigma_bf, eval_tmp_bf)
+    Elist = []
+    if len(Y) >= len(bf): # failsafe: if the number of erratas is higher than the number of coefficients in the magnitude polynomial, we failed!
+        for i in range(coder.gf2_charac): # FIXME? is this really necessary to go to self.gf2_charac? len(rp) wouldn't be just enough? (since the goal is anyway to substract E to rp)
+            if i in bf:
+                Elist.append(Y[bf.index(i)])
+                E = Polynomial( Elist[::-1])
+                error_bits = [bin(int(i))[2:] for i in Elist]
+                s = ""
+                for i in range(len(error_bits)):                
+                    s += error_bits[i]
+                s = s[::-1]
+    return s
