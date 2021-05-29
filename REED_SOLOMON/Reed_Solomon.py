@@ -77,7 +77,6 @@ def simulate(circ):
 
 
 #measure the syndrome
-
 def get_syndrome(circ):
     cr = ClassicalRegister(2*k_cl*K)
     circ.add_register(cr)
