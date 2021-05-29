@@ -1,11 +1,11 @@
 from qiskit import *
-#import unireedsolomon as rs
+from polynomial import Polynomial
+import unireedsolomon as rs
 from matplotlib import *
 from math import pi, floor
 import numpy as np
 from qiskit.providers.aer import AerSimulator
 from qiskit.circuit.library import QFT
-from Berlekamp_Massey import *
 
 #PARAMETERS SETUP
 
@@ -25,6 +25,7 @@ print("Sent Qbits: ", k_cl)
 print("Optimal distance: ", delta)
 print("Maximum error-correcting: ", floor((K)/2), "/Symbol")
 print("-------------------------------------------")
+
 
 
 #--------------------------------------------------------------------------------------
@@ -69,7 +70,7 @@ def get_qbits(circ):
 
 #ENCODING: takes a message and return the circuit that encodes it
 
-def encoder_RS(initial_state):
+def encoder(initial_state):
     qc = QuantumCircuit(encode_reg)
     for i in range(0,k_cl):
         qc.initialize(initial_state[i], i) 
@@ -82,7 +83,10 @@ def encoder_RS(initial_state):
     qc.z(2)
     return qc
 
-def decoder_RS(qc):
+
+#CIRCUIT TO COMPUTE THE SYNDROME
+
+def syn_circuit(qc):
     qc.append(fourier, encode_reg[:ENC])
     for i in range(k_cl+1,k_cl*(K+1)+1):
         qc.cx(i-1, i+ENC-k_cl-1)
@@ -95,6 +99,9 @@ def decoder_RS(qc):
     qc.append(inv_fourier, encode_reg[:ENC])
     return qc
 
+
+#MEASURE THE SYNDROME
+
 def get_syndrome(circ):
     cr = ClassicalRegister(2*k_cl*K)
     circ.add_register(cr)
@@ -104,19 +111,24 @@ def get_syndrome(circ):
     syn = max(results, key=results.get)
     return syn
 
+
+#GIVEN THE SYNDROME RETURN THE POSITIONS OF THE ERRORS USING CLASSICAL BERLEKAMP-MASSEY
+
 def error_locator(syn):          
 
     BFsyndrome = (syn)[:k_cl*K]         #bit flip syndrome string
     PFsyndrome = (syn)[k_cl*K:]         #phase flip syndrome string
 
-
     print("-------------------------------------------")
     print("Bit fip Syndrome: ", BFsyndrome)
     print("Phase flip Syndrome: ", PFsyndrome)
     
+    coder = rs.RSCoder(21,12)
+    error_bf, sigma_bf = coder._berlekamp_massey(coder._list2gfpoly(BFsyndrome))
+    error_pf, sigma_pf = coder._berlekamp_massey(coder._list2gfpoly(PFsyndrome))
+    eval_tmp_bf, bf = coder._chien_search(error_bf)
+    eval_tmp_pf, pf = coder._chien_search(error_pf)
     #Given the syndrome return the error locator polynomial
-    bf = berlekamp_massey(BFsyndrome)
-    pf = berlekamp_massey(PFsyndrome)
     
     print("Error Locator Bit-flip: ", bf)
     print("Error Locator Phase-flip: ", pf)
@@ -124,7 +136,9 @@ def error_locator(syn):
     return (bf,pf)
 
 
-def recovery(circ, bf, pf):
+#CORRECT THE ERRORS AND RETURN THE ORIGINAL MESSAGE
+
+def decoder(circ, bf, pf):
     for i in range(len(bf)):
         if (bf[i] == 1):
             circ.x(i)
@@ -139,6 +153,7 @@ def recovery(circ, bf, pf):
     circ.append(fourier, encode_reg[:ENC])
     message = get_qbits(circ)
     return message
+
 #------------------------------------------------------------------------------------
 
 #SIMULATE THE CIRCUIT
@@ -153,8 +168,10 @@ def simulate(circ):
 
 #------------------------------------------------------------------------------------
 
-qc = decoder_RS(encoder_RS(initial_state))
-message = recovery(qc, [1,0,0], [0,0,1])
-print(message)
-qc.draw(output='mpl', filename='fig.png')
-print("Finished")
+BFsyndrome = '001001100'
+coder = rs.RSCoder(21,12)
+error_bf, omega_bf = coder._berlekamp_massey(coder._list2gfpoly(BFsyndrome))
+print(error_bf)
+evaluator, bf = coder._chien_search(error_bf)
+print(bf)
+print('Finished')
