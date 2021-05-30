@@ -99,21 +99,17 @@ def error_string(classical_syn):
     eval_tmp_bf, bf = coder._chien_search_faster(error_bf)
     Y = coder._forney(sigma_bf, eval_tmp_bf)
     Elist = []
-    if(classical_syn != "000"):
-
-        if len(Y) >= len(bf): # failsafe: if the number of erratas is higher than the number of coefficients in the magnitude polynomial, we failed!
-            for i in range(coder.gf2_charac): # FIXME? is this really necessary to go to self.gf2_charac? len(rp) wouldn't be just enough? (since the goal is anyway to substract E to rp)
-                if i in bf:
-                    Elist.append(Y[bf.index(i)])
-                    E = Polynomial( Elist[::-1])
-                    error_bits = [bin(int(i))[2:] for i in Elist]
-                    s = ""
-                    for i in range(len(error_bits)):                
-                        s += error_bits[i]
+    if len(Y) >= len(bf): # failsafe: if the number of erratas is higher than the number of coefficients in the magnitude polynomial, we failed!
+        for i in range(coder.gf2_charac): # FIXME? is this really necessary to go to self.gf2_charac? len(rp) wouldn't be just enough? (since the goal is anyway to substract E to rp)
+            if i in bf:
+                Elist.append(Y[bf.index(i)])
+                E = Polynomial( Elist[::-1])
+                error_bits = [bin(int(i))[2:] for i in Elist]
+                s = ""
+                for i in range(len(error_bits)):                
+                    s += error_bits[i]
                     s = s[::-1]
         return s
-    else:
-        return ""
     
 #take the syndrome computed by the quantum circuit and apply error_string
 def error_locator(syn):
@@ -158,7 +154,6 @@ def syn_circuit(qc):
         qc.h(i+1)
     qc.append(inv_fourier, encode_reg[:ENC])
     return qc
-
 
 #CORRECT THE ERRORS AND RETURN THE ORIGINAL MESSAGE
 
