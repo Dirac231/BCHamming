@@ -55,7 +55,6 @@ def simulate(circ):
     return counts
 
 #------------------------------------------------------------------------------------
-
 #MEASURE FUNCTIONS
 
 def measure_encoding(circ):
@@ -83,9 +82,9 @@ def get_syndrome(circ):
     circ.add_register(cr)
     for i in range(0, 2*k_cl*K):
         circ.measure(ENC+i,cr[i])
-    results = simulate(circ)
-    syn = max(results, key=results.get)
-    return syn
+    ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}
+    syndromes = list(ordered_res)[::-1]
+    return syndromes
 
 #------------------------------------------------------------------------------------
 
@@ -117,13 +116,17 @@ def error_string(classical_syn):
         return ""
     
 #take the syndrome computed by the quantum circuit and apply error_string
-def error_locator(syn):          
-    BFsyndrome = oct(int((syn)[:k_cl*K],2))[2:]        #bit flip syndrome string
-    PFsyndrome = oct(int((syn)[k_cl*K:],2))[2:]         #phase flip syndrome string
-    #use functions in unireedsolomon to compute the error locations bf, pf
-    bf = error_string(BFsyndrome)
-    pf = error_string(PFsyndrome)
-    return bf,pf
+def error_locator(syn):
+	for x in syn:  
+		BFsyndrome = oct(int((x)[:k_cl*K],2))[2:]         #bit flip syndrome string
+		PFsyndrome = oct(int((x)[k_cl*K:],2))[2:]         #phase flip syndrome string
+ 														  #use functions in unireedsolomon to compute the error locations bf, pf
+		try:
+			bf = error_string(BFsyndrome)
+			pf = error_string(PFsyndrome)
+			return bf,pf
+		except RSCodecError:
+			continue
 
 #------------------------------------------------------------------------------------
 
@@ -162,11 +165,11 @@ def syn_circuit(qc):
 def decoder(circ):
     syn = get_syndrome(circ)
     bf,pf = error_locator(syn)
-    if(bf != "1"):
-        for i in range(len(bf)):
-            if (bf[i] == 1):
-                circ.x(i)
-    if (pf != "1"):
+    if(bf != "1" or syn != "0"*k_cl*K*2):
+    	for i in range(len(bf)):
+    		if (bf[i] == 1):
+    			circ.x(i)
+    if (pf != "1" or syn != "0"*k_cl*K*2):
         for i in range(ENC):
             circ.h(i)
         for i in range(len(pf)):
