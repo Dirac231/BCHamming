@@ -1,5 +1,52 @@
-# BCHamming
-Official Repository of the Hackathon project "Quantum BCH/Hamming"
+# Europe Qiskit Hackaton 2021
 
-1. Proposal Slides (29th April): https://www.overleaf.com/2252827127kwzngvkptmhm
-2. Quantum error correction in qiskit:  https://medium.com/qiskit/heres-how-to-test-error-correction-on-an-ibm-quantum-computer-ecb086606e7
+This repository was created for the Europe Qiskit Hackaton 2021. It focuses on re-purpusing classic error correction code and make it Quantum
+
+# Quantum Hamming Code
+
+Suppose you have a message |m> that is long n bits and you want to encode it in a noise resistant message |M>.
+
+To do so you have to create a quantum cirucuit that is big enough to be able to hold |M> and additional ancillas (ancillas are required only for the syndrome).
+
+To know how big has to be the circuit call the function 
+
+```python
+HammingSize(n,gate):
+"""
+	args:
+		n: lenght of the input message
+		gate: it's either 'encoder' or 'decoder'
+	returns:
+		N: size necessary of the circuit
+"""
+```
+
+Once you know how big is the circuit you can use the gates
+
+```python
+HammingEncode(N):
+"""
+	args:
+		N: is the output of the Hamming size
+	returns:
+		A gate that is N qbits Big
+"""
+
+HammingCorrect(N):
+"""
+	args:
+		N: is the output of the Hamming size
+	returns:
+		A gate that is N qbits Big
+"""
+
+HammingDecode(N):
+"""
+	args:
+		N: is the output of the Hamming size
+	returns:
+		A gate that is N qbits Big
+"""
+```
+
+# Reed-Solomon
