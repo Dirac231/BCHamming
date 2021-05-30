@@ -97,7 +97,6 @@ def get_syndrome(circ):
 #GIVEN THE CLASSICAL SYNDROME, RETURNS THE POSITIONS OF THE ERRORS USING CLASSICAL BERLEKAMP-MASSEY
 
 def error_string(classical_syn):
-    """Given a classical syndrome it returns a string with 1 in the positions where there is an error"""
     k1 = int(ENC/k_cl)
     k2 = int(((ENC-K*k_cl)/k_cl))
     prime = int(hex(find_prime_polynomials(c_exp=k_cl,single=True)),16)
@@ -106,17 +105,21 @@ def error_string(classical_syn):
     eval_tmp_bf, bf = coder._chien_search_faster(error_bf)
     Y = coder._forney(sigma_bf, eval_tmp_bf)
     Elist = []
-    if len(Y) >= len(bf): # failsafe: if the number of erratas is higher than the number of coefficients in the magnitude polynomial, we failed!
-        for i in range(coder.gf2_charac):  
-            if i in bf:
-                Elist.append(Y[bf.index(i)])
-                E = Polynomial( Elist[::-1])
-                error_bits = [bin(int(i))[2:] for i in Elist]
-                s = ""
-                for i in range(len(error_bits)):                
-                    s += error_bits[i]
-                s = s[::-1]
-    return s
+    if(classical_syn != "000"):
+
+        if len(Y) >= len(bf): 
+            for i in range(coder.gf2_charac):
+                if i in bf:
+                    Elist.append(Y[bf.index(i)])
+            E = Polynomial( Elist[::-1])
+            error_bits = [bin(int(i))[2:] for i in Elist]
+            s = ""
+            for i in range(len(error_bits)):                
+                s += error_bits[i]
+            s = s[::-1]
+        return s
+    else:
+        return ""
     
     
 def error_locator(syn):
