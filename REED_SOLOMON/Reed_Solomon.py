@@ -192,7 +192,7 @@ def decoder(circ):
 #------------------------------------------------------------------------------------
 
 def send_message(initial_state):
-    """Does everything, given the inital state"""
+    """Does everything, given the inital_state"""
     qc = encoder(initial_state)
 
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
