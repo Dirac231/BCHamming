@@ -49,7 +49,7 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inve
 
 def simulate(circ):
     """Simulate the circuit with matrix product state and return the list of results"""
-    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=1024).result()
+    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=100).result()
     print('Simulation Success: {}'.format(result.success))
     print("Time taken: {} sec".format(result.time_taken))
     counts = result.get_counts(0)
@@ -87,7 +87,8 @@ def get_syndrome(circ):
     circ.add_register(cr)
     for i in range(0, 2*k_cl*K):
         circ.measure(ENC+i,cr[i])
-    ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}
+    #orders the syndromes in descending order in term of the occurrences
+    ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}   
     syndromes = list(ordered_res)[::-1]
     return syndromes
 
@@ -106,7 +107,7 @@ def error_string(classical_syn):
     Y = coder._forney(sigma_bf, eval_tmp_bf)
     Elist = []
     if len(Y) >= len(bf): # failsafe: if the number of erratas is higher than the number of coefficients in the magnitude polynomial, we failed!
-        for i in range(coder.gf2_charac): # FIXME? is this really necessary to go to self.gf2_charac? len(rp) wouldn't be just enough? (since the goal is anyway to substract E to rp)
+        for i in range(coder.gf2_charac):  
             if i in bf:
                 Elist.append(Y[bf.index(i)])
                 E = Polynomial( Elist[::-1])
@@ -123,8 +124,9 @@ def error_locator(syn):
     for x in syn:  
         BFsyndrome = oct(int((x)[:k_cl*K],2))[2:]         #bit flip syndrome string
         PFsyndrome = oct(int((x)[k_cl*K:],2))[2:]         #phase flip syndrome string
-                                                          #use functions in unireedsolomon to compute the error locations bf, pf
-        try:
+        #Since the QFT has a degree of approximation, it can change the syndrome to a wrong one. 
+        #We know for sure that if this error is raised the syndrome was modified by the QFT, so in this case we try to use the next syndrome with most occurrences.                                                
+        try:                                              #use functions in unireedsolomon to compute the error locations bf, pf
             bf = error_string(BFsyndrome)
             pf = error_string(PFsyndrome)
             return bf,pf
