@@ -4,9 +4,9 @@ This repository was created for the Europe Qiskit Hackaton 2021. It focuses on r
 
 # Quantum Hamming Code
 
-Suppose you have a message $\ket{m}$ that is long $n$ bits and you want to encode it in a noise resistant message $\ket M$.
+Suppose you have a message |m> that is long n bits and you want to encode it in a noise resistant message |M>.
 
-To do so you have to create a quantum cirucuit that is big enough to be able to hold $\ket M$ and additional ancillas (ancillas are required only for the syndrome).
+To do so you have to create a quantum cirucuit that is big enough to be able to hold |M> and additional ancillas (ancillas are required only for the syndrome).
 
 To know how big has to be the circuit call the function 
 
