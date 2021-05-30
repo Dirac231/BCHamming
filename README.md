@@ -21,6 +21,16 @@ HammingSize(n,gate,kind):
     Returns:
         N (int): size of the gate
     """
+    
+HammingOrder(n):
+    """Gives you the order of the Hamming gate as a function of n
+
+    Args:
+        n (int): lenght of the input message
+
+    Returns:
+        N (int): order of the Hamming gate
+    """
 ```
 
 Once you know how big is the circuit you can use the gates
