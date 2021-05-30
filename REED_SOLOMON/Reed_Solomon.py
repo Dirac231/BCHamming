@@ -173,7 +173,7 @@ def syn_circuit(qc):
 #CORRECTS THE ERRORS AND RETURNS THE ORIGINAL MESSAGE
 
 def decoder(circ):
-    """Takes the circuite that computes the syndrome (given by syn_circuite) and returns the original message"""
+    """Takes the circuits that computes the syndrome (given by syn_circuite) and returns the original message"""
     syn = get_syndrome(circ)
     bf,pf = error_locator(syn)
     if(bf != "1" or syn != "0"*k_cl*K*2):
@@ -210,5 +210,5 @@ def send_message(initial_state):
 
 #------------------------------------------------------------------------------------
 
-#Call the function that does everything
+#Calls the function that does everything
 send_message(initial_state)
