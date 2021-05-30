@@ -1,4 +1,4 @@
-# Readme github
+# Europe Qiskit Hackaton 2021
 
 This repository was created for the Europe Qiskit Hackaton 2021. It focuses on re-purpusing classic error correction code and make it Quantum
 
