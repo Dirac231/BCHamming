@@ -210,7 +210,7 @@ def send_message(initial_state):
     for i in initial_state:
         print(i,"\n")
     print("Syndrome was: ", syn[::-1])
-    return 
+    return qc
 
 #------------------------------------------------------------------------------------
 
