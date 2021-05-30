@@ -11,42 +11,46 @@ To do so you have to create a quantum cirucuit that is big enough to be able to 
 To know how big has to be the circuit call the function 
 
 ```python
-HammingSize(n,gate):
-"""
-	args:
-		n: lenght of the input message
-		gate: it's either 'encoder' or 'decoder'
-	returns:
-		N: size necessary of the circuit
-"""
+HammingSize(n,gate,kind):
+    """Gives you the size of the circuit
+    Args:
+        n (int): lenght of the input message
+        gate (str): it's either 'encoder' or 'decoder'
+        kind (str): The kind argument must be one of bit, phase or both
+
+    Returns:
+        N (int): size of the gate
+    """
 ```
 
 Once you know how big is the circuit you can use the gates
 
 ```python
-HammingEncode(N):
-"""
-	args:
-		N: is the output of the Hamming size
-	returns:
-		A gate that is N qbits Big
-"""
+Hamming_encode(N):
+    """Returns a hamming encoding circuit
 
-HammingCorrect(N):
-"""
-	args:
-		N: is the output of the Hamming size
-	returns:
-		A gate that is N qbits Big
-"""
+    Args:
+        N (int): Order of the hamming code used, acts on 2^N qubits
+        kind (str, optional): Set to "bit" for correcting bit flip errors,
+        "phase" for correcting phase flip errors, "both" corrects both errors. 
+        Defaults to "both".
 
-HammingDecode(N):
-"""
-	args:
-		N: is the output of the Hamming size
-	returns:
-		A gate that is N qbits Big
-"""
-```
+    Returns:
+        Gates: The gates composing the circuit
+    """
+
+Hamming_decode(N, kind="both",read=True, name="Hamming decoder"):
+    """It corrects the output, if you don't want to read the output just write read=False, that way
+    the bits don't get switched
+
+    Args:
+        N (int): The order of the Hamming code
+        kind (str): The kind argument must be one of bit, phase or both. Defaults to "both".
+        read (bool): If True returns the output on the first qbits, otherwise it doesn't switch the output. Defaults to True.
+        name (str): The name written on the gate. Defaults to "Hamming decoder".
+
+    Returns:
+        gate : Hamming decode
+    """
 
 # Reed-Solomon
