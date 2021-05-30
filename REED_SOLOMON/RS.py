@@ -40,8 +40,8 @@ if (len(initial_state) != k_cl):
 
 #QTF IMPLEMENTATION
 
-fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inverse=False, insert_barriers=True, name='qft')
-inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inverse=True, insert_barriers=True, name='qft-1')
+fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inverse=False, insert_barriers=False, name='qft')
+inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inverse=True, insert_barriers=False, name='qft-1')
 
 #-----------------------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inve
 
 def simulate(circ):
     """Simulate the circuit with matrix product state and return the list of results"""
-    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=10).result()
+    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=50).result()
     print('Simulation Success: {}'.format(result.success))
     print("Time taken: {} sec".format(result.time_taken))
     counts = result.get_counts(0)
@@ -132,8 +132,8 @@ def error_locator(syn):
         try:                                              #use functions in unireedsolomon to compute the error locations bf, pf
             bf = error_string(BFsyndrome)
             pf = error_string(PFsyndrome)
-            return bf,pf
-        except RSCodecError:
+            return bf,pf,x
+        except (RSCodecError):
             continue
     print("No valid syndrome was found, exiting...")
     exit()
@@ -177,22 +177,24 @@ def syn_circuit(qc):
 def decoder(circ):
     """Takes the circuits that computes the syndrome (given by syn_circuite) and returns the original message"""
     syn = get_syndrome(circ)
-    bf,pf = error_locator(syn)
-    if(bf != "1" or syn != "0"*k_cl*K*2):
+    bf,pf,x = error_locator(syn)
+    if(bf != "1" or x != "0"*k_cl*K*2):
         for i in range(len(bf)):
             if (bf[i] == 1):
                 circ.x(i)
-    if (pf != "1" or syn != "0"*k_cl*K*2):
+                print("Found bit-flip error at position: ", i)
+    if (pf != "1" or x != "0"*k_cl*K*2):
         for i in range(ENC):
             circ.h(i)
         for i in range(len(pf)):
             if (pf[i] == 1):
                 circ.z(i)
+                print("Found phase-flip error at position: ", i)
         for i in range(ENC):
             circ.h(i)
     circ.append(fourier, encode_reg[:ENC])
     message = get_qbits(circ)
-    return message
+    return message,x
 
 #------------------------------------------------------------------------------------
 
@@ -201,17 +203,15 @@ def send_message(initial_state):
     qc = encoder(initial_state)
 
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
-
     qc = syn_circuit(qc)
-    retrieved = decoder(qc)
+    retrieved,syn = decoder(qc)
     print("Retrieved message: ", retrieved[:3][::-1])
     print("Compared with: ")
     for i in initial_state:
         print(i,"\n")
-    print("Syndrome was: ", retrieved[3:][::-1])
-    return
+    print("Syndrome was: ", syn[::-1])
+    return qc
 
 #------------------------------------------------------------------------------------
-
 
 send_message(initial_state)
