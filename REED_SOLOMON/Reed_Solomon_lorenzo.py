@@ -49,7 +49,7 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inve
 
 def simulate(circ):
     """Simulate the circuit with matrix product state and return the list of results"""
-    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=100).result()
+    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=10).result()
     print('Simulation Success: {}'.format(result.success))
     print("Time taken: {} sec".format(result.time_taken))
     counts = result.get_counts(0)
@@ -212,3 +212,6 @@ def send_message(initial_state):
     return
 
 #------------------------------------------------------------------------------------
+
+
+send_message(initial_state)
