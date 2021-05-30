@@ -135,6 +135,8 @@ def error_locator(syn):
             return bf,pf
         except RSCodecError:
             continue
+    print("No valid syndrome was found, exiting...")
+    exit()
 
 #------------------------------------------------------------------------------------
 
@@ -207,8 +209,6 @@ def send_message(initial_state):
     for i in initial_state:
         print(i,"\n")
     print("Syndrome was: ", retrieved[3:][::-1])
+    return
 
 #------------------------------------------------------------------------------------
-
-#Calls the function that does everything
-send_message(initial_state)
