@@ -123,7 +123,6 @@ def error_string(classical_syn):
     
     
 def error_locator(syn):
-    print(syn)
     """take the syndrome computed by the quantum circuit and apply error_string"""
     for x in syn:  
         BFsyndrome = oct(int((x)[:k_cl*K],2))[2:]         #bit flip syndrome string
@@ -179,8 +178,6 @@ def decoder(circ):
     """Takes the circuits that computes the syndrome (given by syn_circuite) and returns the original message"""
     syn = get_syndrome(circ)
     bf,pf,x = error_locator(syn)
-    print(bf)
-    print(pf)
     if(bf != "1" or x != "0"*k_cl*K*2):
         for i in range(len(bf)):
             if (bf[i] == 1):
