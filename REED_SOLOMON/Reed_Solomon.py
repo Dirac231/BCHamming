@@ -22,7 +22,7 @@ encode_reg = QuantumRegister(ENC+2*k_cl*K)
 
 print("-------------------------------------------")
 print("Encoding Qbits: ", ENC)
-print("Sent Qbits: ", k_cl)
+print("Sent Qbits: ", k_cl*(2**k_cl-1-2*K))
 print("Optimal distance: ", delta)
 print("Maximum error-correcting: ", floor((K)/2), "/Symbol")
 print("-------------------------------------------")
@@ -105,7 +105,7 @@ def error_string(classical_syn):
     eval_tmp_bf, bf = coder._chien_search_faster(error_bf)
     Y = coder._forney(sigma_bf, eval_tmp_bf)
     Elist = []
-    if(classical_syn != "000"):
+    if(classical_syn != "0"*k_cl):
 
         if len(Y) >= len(bf): 
             for i in range(coder.gf2_charac):
