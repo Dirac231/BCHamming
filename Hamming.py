@@ -54,9 +54,14 @@ def HammingCircuit(N, ClassicalRegisters=None, name=None, ancillas=None):
 
 
 def Swapper(N):
-    """
-    Circuit that shifts the every qubit right by the number of
+    """Circuit that shifts the every qubit right by the number of
     power-of-two qubits before it
+
+    Args:
+        N (int): Order of Hamming code
+
+    Returns:
+        gate: swapper
     """
     qc = HammingCircuit(N, name="Swapper", ancillas=0)
     source = 2**N - N - 2
@@ -104,9 +109,7 @@ def Hamming_bit_encoder(N, name="bit encoder"):
 def is_valid_input(kind):
     if kind not in ["bit", "phase", "both"]:
         message = f"The kind argument must be one of bit, phase or both, received {kind} instead"
-        warn(message, RuntimeWarning)
-        return False
-
+        raise Exception(message)
     return True
 
 
@@ -158,9 +161,20 @@ def ReverseSwapper(N):
     return qc.to_gate(label="Reverse Swapper")
 
 
-def Hamming_decode(N, kind="both", name="Hamming decoder"):
-    if not is_valid_input(kind):
-        return
+def Hamming_decode(N, kind="both",read=True, name="Hamming decoder"):
+    """It corrects the output, if you don't want to read the output just write read=False, that way
+    the bits don't get switched
+
+    Args:
+        N (int): The order of the Hamming code
+        kind (str): The kind argument must be one of bit, phase or both. Defaults to "both".
+        read (bool): If True returns the output on the first qbits, otherwise it doesn't switch the output. Defaults to True.
+        name (str): The name written on the gate. Defaults to "Hamming decoder".
+
+    Returns:
+        [type]: [description]
+    """
+    is_valid_input(kind)
 
     if kind == "both": 
         N += 1
@@ -168,13 +182,55 @@ def Hamming_decode(N, kind="both", name="Hamming decoder"):
 
     if kind != "bit":
         qc.h(list(range(2**N)))
-    qc.append(Hamming_bit_decoder(N), [*range(2**N+N)])
+    qc.append(Hamming_bit_decoder(N,read), [*range(2**N+N)])
 
     if kind == "both":
-        bits = [*list(range(2**(N-1))), *list(range(2**N + N, 2**N + 2*N - 1))]
+        if read==True:
+            bits = [*list(range(2**(N-1))), *list(range(2**N + N, 2**N + 2*N - 1))]
+        if read==False:
+            bits = [*[i for i in range(2**(N-1)+N+1) if not is_power_2(i)],
+                      *[*range(2**N + N, 2**N + 2*N - 1)]]
         qc.append(Hamming_bit_decoder(N-1), bits)
     
     return qc.to_gate(label=name)
+
+
+def HammingOrder(n):
+    """Gives you the order of the Hamming gate as a function of n
+
+    Args:
+        n (int): lenght of the input message
+
+    Returns:
+        N (int): order of the Hamming gate
+    """
+    for i in range(0,15):
+        N=2**i
+        if N-i-1>=n: return i
+            
+
+
+def HammingSize(n,gate,kind):
+    """Gives you the size of the circuit
+    Args:
+        n (int): lenght of the input message
+        gate (str): it's either 'encoder' or 'decoder'
+        kind (str): The kind argument must be one of bit, phase or both
+
+    Returns:
+        N (int): size of the gate
+    """
+    is_valid_input(kind)   
+    N=HammingOrder(n, gate)
+
+    if gate=='encoder':
+        if kind=='both': return 2**(N+1)
+        return 2**N
+    if gate=='decoder':
+        if kind=='both': return 2**(N+1) + 2*N + 1
+        return 2**N + N
+    
+    raise Exception('Gate not valid, the input must be either \'encoder\' or \'decoder\'')
 
 def xor(N):
     #This is the gate that calculates the xor of all the position with ones, this gives the position of the faulty qbit
@@ -199,12 +255,12 @@ def correct(N):
         circ.mct([*range(nqubits,nqubits+N)],i)
     return circ.to_gate(label='Correction')
 
-def Hamming_bit_decoder(N):
+def Hamming_bit_decoder(N,read=True):
     #Hamming Gate resistant to bit-fips
     circ=HammingCircuit(N, ancillas=N)
     circ.append(xor(N),[*range(2**N+N)])
     circ.append(correct(N),[*range(2**N+N)])
-    circ.append(ReverseSwapper(N), [*range(2**N)])
+    if read==True: circ.append(ReverseSwapper(N), [*range(2**N)])
     return circ.to_gate(label='Hamming0')
 
 def HammingRedundant(n):
