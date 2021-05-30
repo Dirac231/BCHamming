@@ -7,6 +7,7 @@ from numpy.polynomial import Polynomial
 from qiskit.providers.aer import AerSimulator
 from qiskit.circuit.library import QFT
 
+
 #PARAMETERS SETUP
 
 #Parameters of the classical code used to generate the optimal quantum code.
@@ -47,17 +48,19 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inve
 #SIMULATES THE CIRCUIT
 
 def simulate(circ):
-    #simulator
-    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=1024).result()
+    """Simulate the circuit with matrix product state and return the list of results"""
+    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=10).result()
     print('Simulation Success: {}'.format(result.success))
     print("Time taken: {} sec".format(result.time_taken))
     counts = result.get_counts(0)
     return counts
 
 #------------------------------------------------------------------------------------
+
 #MEASURE FUNCTIONS
 
 def measure_encoding(circ):
+    """Measure the Qbits used in the encoding, i.e. if the lenght is 3, the first 21 Qbits"""
     cr = ClassicalRegister(ENC, 'encoded')
     circ.add_register(cr)
     for i in range(0, ENC):
@@ -67,6 +70,7 @@ def measure_encoding(circ):
     return encoded
 
 def get_qbits(circ):
+    """Measure the Qbits with the message, i.e. if the lenght is 3, the first 3 Qbits"""
     cr = ClassicalRegister(k_cl, 'out')
     circ.add_register(cr)
     for i in range(0,k_cl):
@@ -78,6 +82,7 @@ def get_qbits(circ):
     return qbits
 
 def get_syndrome(circ):
+    """Measure the Qbits with the syndrome, i.e. if the lenght is 3, the last 18 Qbits"""
     cr = ClassicalRegister(2*k_cl*K)
     circ.add_register(cr)
     for i in range(0, 2*k_cl*K):
@@ -91,6 +96,7 @@ def get_syndrome(circ):
 #GIVEN THE CLASSICAL SYNDROME RETURN THE POSITIONS OF THE ERRORS USING CLASSICAL BERLEKAMP-MASSEY
 
 def error_string(classical_syn):
+    """Given a classical syndrome it returns a string with 1 in the positions where there is an error"""
     k1 = int(ENC/k_cl)
     k2 = int(((ENC-K*k_cl)/k_cl))
     prime = int(hex(find_prime_polynomials(c_exp=k_cl,single=True)),16)
@@ -108,27 +114,29 @@ def error_string(classical_syn):
                 s = ""
                 for i in range(len(error_bits)):                
                     s += error_bits[i]
-                    s = s[::-1]
-        return s
+                s = s[::-1]
+    return s
     
-#take the syndrome computed by the quantum circuit and apply error_string
+    
 def error_locator(syn):
-	for x in syn:  
-		BFsyndrome = oct(int((x)[:k_cl*K],2))[2:]         #bit flip syndrome string
-		PFsyndrome = oct(int((x)[k_cl*K:],2))[2:]         #phase flip syndrome string
- 														  #use functions in unireedsolomon to compute the error locations bf, pf
-		try:
-			bf = error_string(BFsyndrome)
-			pf = error_string(PFsyndrome)
-			return bf,pf
-		except RSCodecError:
-			continue
+    """take the syndrome computed by the quantum circuit and apply error_string"""
+    for x in syn:  
+        BFsyndrome = oct(int((x)[:k_cl*K],2))[2:]         #bit flip syndrome string
+        PFsyndrome = oct(int((x)[k_cl*K:],2))[2:]         #phase flip syndrome string
+                                                          #use functions in unireedsolomon to compute the error locations bf, pf
+        try:
+            bf = error_string(BFsyndrome)
+            pf = error_string(PFsyndrome)
+            return bf,pf
+        except RSCodecError:
+            continue
 
 #------------------------------------------------------------------------------------
 
-#ENCODING: takes a message and return the circuit that encodes it
+"""ENCODING: takes a message and return the circuit that encodes it"""
 
 def encoder(initial_state):
+    """Takes a message and return the circuit that encodes it"""
     qc = QuantumCircuit(encode_reg)
     for i in range(0,k_cl):
         qc.initialize(initial_state[i], i) 
@@ -143,6 +151,7 @@ def encoder(initial_state):
 #CIRCUIT TO COMPUTE THE SYNDROME
 
 def syn_circuit(qc):
+    """Takes the ecoding circuit and computes the syndrome"""
     qc.append(fourier, encode_reg[:ENC])
     for i in range(k_cl+1,k_cl*(K+1)+1):
         qc.cx(i-1, i+ENC-k_cl-1)
@@ -155,15 +164,17 @@ def syn_circuit(qc):
     qc.append(inv_fourier, encode_reg[:ENC])
     return qc
 
+
 #CORRECT THE ERRORS AND RETURN THE ORIGINAL MESSAGE
 
 def decoder(circ):
+    """Takes the circuite that computes the syndrome (given by syn_circuite) and returns the original message"""
     syn = get_syndrome(circ)
     bf,pf = error_locator(syn)
     if(bf != "1" or syn != "0"*k_cl*K*2):
-    	for i in range(len(bf)):
-    		if (bf[i] == 1):
-    			circ.x(i)
+        for i in range(len(bf)):
+            if (bf[i] == 1):
+                circ.x(i)
     if (pf != "1" or syn != "0"*k_cl*K*2):
         for i in range(ENC):
             circ.h(i)
@@ -179,9 +190,10 @@ def decoder(circ):
 #------------------------------------------------------------------------------------
 
 def send_message(initial_state):
+    """Does everything, given the inital state"""
     qc = encoder(initial_state)
-    
-    #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)#
+
+    #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
 
     qc = syn_circuit(qc)
     retrieved = decoder(qc)
@@ -191,4 +203,7 @@ def send_message(initial_state):
         print(i,"\n")
     print("Syndrome was: ", retrieved[3:][::-1])
 
+#------------------------------------------------------------------------------------
+
+#Call the function that does everything
 send_message(initial_state)
