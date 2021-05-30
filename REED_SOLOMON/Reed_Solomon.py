@@ -30,7 +30,7 @@ print("-------------------------------------------")
 
 #--------------------------------------------------------------------------------------
 
-#LOAD THE MESSAGE FROM A FILE
+#LOADS THE MESSAGE FROM A FILE
 
 initial_state = np.loadtxt('states.txt')
 if (len(initial_state) != k_cl):
@@ -93,7 +93,7 @@ def get_syndrome(circ):
 
 #------------------------------------------------------------------------------------
 
-#GIVEN THE CLASSICAL SYNDROME RETURN THE POSITIONS OF THE ERRORS USING CLASSICAL BERLEKAMP-MASSEY
+#GIVEN THE CLASSICAL SYNDROME, RETURNS THE POSITIONS OF THE ERRORS USING CLASSICAL BERLEKAMP-MASSEY
 
 def error_string(classical_syn):
     """Given a classical syndrome it returns a string with 1 in the positions where there is an error"""
@@ -165,7 +165,7 @@ def syn_circuit(qc):
     return qc
 
 
-#CORRECT THE ERRORS AND RETURN THE ORIGINAL MESSAGE
+#CORRECTS THE ERRORS AND RETURNS THE ORIGINAL MESSAGE
 
 def decoder(circ):
     """Takes the circuite that computes the syndrome (given by syn_circuite) and returns the original message"""
