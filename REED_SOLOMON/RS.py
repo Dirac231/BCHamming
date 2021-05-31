@@ -49,10 +49,21 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inve
 
 #SIMULATES THE CIRCUIT
 
-def simulate(circ):
+def simulate_MPS(circ):
     """Simulate the circuit with matrix product state and return the list of results"""
     result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=m).result()
     print('Simulation Success: {}'.format(result.success))
+    print("Time taken: {} sec".format(result.time_taken))
+    counts = result.get_counts(0)
+    return counts
+
+def simulate(circ):
+    TOKEN = '#Insert Token Here'
+	IBMQ.save_account(TOKEN)
+	provider = IBMQ.load_account()
+	provider = IBMQ.get_provider(hub='ibm-q')
+	result = execute(circ, provider.get_backend('simulator_mps'),shots=20).result()
+	print('Simulation Success: {}'.format(result.success))
     print("Time taken: {} sec".format(result.time_taken))
     counts = result.get_counts(0)
     return counts
