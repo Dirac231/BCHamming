@@ -88,7 +88,8 @@ def get_qbits(circ):
         circ.measure(i, cr[i])
     results = simulate(circ)
     qbits = max(results, key=results.get)
-    return qbits
+    plot_histogram(job.result().get_counts(), color='midnightblue', title="Message occurrences")
+    return qbits,results
 
 def get_syndrome(circ):
     """Measure the Qbits with the syndrome, i.e. if the lenght is 3, the last 18 Qbits"""
@@ -202,8 +203,8 @@ def decoder(circ):
         for i in range(ENC):
             circ.h(i)
     circ.append(fourier, encode_reg[:ENC])
-    message = get_qbits(circ)
-    return message,x
+    message,occurrences = get_qbits(circ)
+    return message,x,occurrences
 
 #------------------------------------------------------------------------------------
 
@@ -213,8 +214,9 @@ def send_message(initial_state):
 
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
     qc = syn_circuit(qc)
-    retrieved,syn = decoder(qc)
-    print("Retrieved message: ", retrieved[:3][::-1])
+    retrieved,syn,occurrences = decoder(qc)
+    print("Most probable message: ", retrieved[:3][::-1])
+    print("Occurrences: ", occurrences)
     print("Compared with: ")
     for i in initial_state:
         print(i,"\n")
