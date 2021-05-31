@@ -15,6 +15,8 @@ from qiskit.circuit.library import QFT
 
 k_cl = int(input("Lenght of message: "))        #Order of the finite field in terms of powers of 2
 appr = int(input("QFT approximation degree (the lower the better): ")) 
+m = int(input("Number of shots: ")) 
+
 delta = floor((2**k_cl-1)/2+2)                  #Classical optimal minimum distance of the code
 K = (2**k_cl) - delta                           #Number of classical bits sent
 ENC = k_cl*(2**k_cl - 1)                        #Total encoding Qbits needed
@@ -49,7 +51,7 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inve
 
 def simulate(circ):
     """Simulate the circuit with matrix product state and return the list of results"""
-    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=50).result()
+    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=m).result()
     print('Simulation Success: {}'.format(result.success))
     print("Time taken: {} sec".format(result.time_taken))
     counts = result.get_counts(0)
@@ -90,6 +92,7 @@ def get_syndrome(circ):
     #orders the syndromes in descending order in term of the occurrences
     ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}   
     syndromes = list(ordered_res)[::-1]
+    syndromes = syndromes[:3]           #take just the first three
     return syndromes
 
 #------------------------------------------------------------------------------------
@@ -135,7 +138,7 @@ def error_locator(syn):
             return bf,pf,x
         except (RSCodecError):
             continue
-    print("No valid syndrome was found, exiting...")
+    print("No valid syndrome was found, try decreasing the QFT approximation degree or increasing the number of shots.")
     exit()
 
 #------------------------------------------------------------------------------------
