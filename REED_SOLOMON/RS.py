@@ -28,7 +28,7 @@ K = (2**k_cl) - delta                           #Number of classical bits sent, 
 ENC = k_cl*(2**k_cl - 1)                        #Total encoding Qbits needed
 encode_reg = QuantumRegister(ENC+2*k_cl*K)		#Quantum Register used to construct the full circuit
 ecc = floor((K+1)/2)								#Maximum error correction capability per symbol
-
+shots = 128					#Number of shots in the simulation
 
 #Initialization of the parameters is completed
 print("")
@@ -57,7 +57,7 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse
 def simulate(circ):
 	"""Simulates the circuit using the cloud-computing services of IBMq, this is always the recommended choice to run simulations"""
 	provider = IBMQ.get_provider(hub='ibm-q')
-	result = execute(circ, provider.get_backend('simulator_mps'),shots=128).result()
+	result = execute(circ, provider.get_backend('simulator_mps'),shots=shots).result()
 	print('Simulation Success: {}'.format(result.success))
 	print("Time taken: {} sec".format(result.time_taken))
 	counts = result.get_counts(0)
@@ -136,16 +136,15 @@ def error_string(classical_syn):
 def error_locator(syn):
     """take the syndrome computed by the quantum circuit and apply error_string"""
     for x in syn:
-    	x = x[::-1]  
-        BFsyndrome = oct(int((x)[:k_cl*K],2))[2:]         #bit flip syndrome string
-        PFsyndrome = oct(int((x)[k_cl*K:],2))[2:]         #phase flip syndrome string
+        BFsyndrome = oct(int((x[::-1])[:k_cl*K],2))[2:]         #bit flip syndrome string
+        PFsyndrome = oct(int((x[::-1])[k_cl*K:],2))[2:]         #phase flip syndrome string
 
         #Performs the error locator finding for each measured syndrome, if a error occurs, it computes the errors associated with the next most probable syndrome
         try:                                              #uses functions in the unireedsolomon library to compute the error locations bf, pf
             bf = error_string(BFsyndrome)
             pf = error_string(PFsyndrome)
-            return bf,pf,x
-        except (RSCodecError, ValueError):
+            return bf,pf,x[::-1]
+        except (RSCodecError,ValueError):
             continue
     print("No valid syndrome was found, try increasing the number of shots.")
     exit()
@@ -190,16 +189,20 @@ def decoder(circ):
     """Takes the circuits that computes the syndrome (given by syn_circuit) and returns the original message along with occurrences"""
     syn = get_syndrome(circ)
     bf,pf,x = error_locator(syn)
-    if(bf != "1" or x != "0"*k_cl*K*2):
+    print(bf)
+    print(pf)
+    if(bf != "1" or x[:k_cl*K] != "0"*k_cl*K):
         for i in range(len(bf)):
-            if (bf[i] == 1):
+            if (bf[i] == "1"):
                 circ.x(i)
-    if (pf != "1" or x != "0"*k_cl*K*2):
+    if (pf != "1" or x[k_cl*K:] != "0"*k_cl*K):
         for i in range(ENC):
             circ.h(i)
+
         for i in range(len(pf)):
-            if (pf[i] == 1):
+            if (pf[i] == "1"):
                 circ.z(i)
+
         for i in range(ENC):
             circ.h(i)
     circ.append(fourier, encode_reg[:ENC])
@@ -218,6 +221,7 @@ def send_message(initial_state):
     """Auxiliary testing function, sends the message contained in the file states.txt and returns the simulation circuit."""
     qc = encoder(initial_state)
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
+    qc.x()
     qc = syn_circuit(qc)
     retrieved,syn,occurrences = decoder(qc)
     plot_histogram(occurrences, color='midnightblue', title="Message occurrences").savefig("histogram.png")
@@ -227,6 +231,7 @@ def send_message(initial_state):
     for i in initial_state:
         print(i,"\n")
     print("Syndrome was: ", syn)
+    qc.draw(output='mpl', filename='prova.png')
     return qc
 
 #------------------------------------------------------------------------------------
