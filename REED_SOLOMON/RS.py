@@ -7,7 +7,8 @@ from numpy.polynomial import Polynomial
 from qiskit.providers.aer import AerSimulator
 from qiskit.circuit.library import QFT
 
-
+IBMQ.save_account(TOKEN)   #Optional but strongly recommended, needed in order to load the ibm-mps simulator for optimal simulation
+provider = IBMQ.load_account()
 #PARAMETERS SETUP
 
 #Parameters of the classical code used to generate the optimal quantum code.
@@ -15,7 +16,7 @@ from qiskit.circuit.library import QFT
 
 k_cl = int(input("Lenght of message: "))        #Order of the finite field in terms of powers of 2
 appr = int(input("QFT approximation degree (the lower the better): ")) 
-m = int(input("Number of shots: ")) 
+shots = int(input("Number of shots: ")) 
 
 delta = floor((2**k_cl-1)/2+2)                  #Classical optimal minimum distance of the code
 K = (2**k_cl) - delta                           #Number of classical bits sent
@@ -51,22 +52,19 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inve
 
 def simulate_MPS(circ):
     """Simulate the circuit with matrix product state and return the list of results"""
-    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=m).result()
+    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=shots).result()
     print('Simulation Success: {}'.format(result.success))
     print("Time taken: {} sec".format(result.time_taken))
     counts = result.get_counts(0)
     return counts
 
 def simulate(circ):
-    TOKEN = '#Insert Token Here'
-	IBMQ.save_account(TOKEN)
-	provider = IBMQ.load_account()
 	provider = IBMQ.get_provider(hub='ibm-q')
-	result = execute(circ, provider.get_backend('simulator_mps'),shots=20).result()
+	result = execute(circ, provider.get_backend('simulator_mps'),shots=shots).result()
 	print('Simulation Success: {}'.format(result.success))
-    print("Time taken: {} sec".format(result.time_taken))
-    counts = result.get_counts(0)
-    return counts
+	print("Time taken: {} sec".format(result.time_taken))
+	counts = result.get_counts(0)
+	return counts
 
 #------------------------------------------------------------------------------------
 
@@ -102,8 +100,7 @@ def get_syndrome(circ):
         circ.measure(ENC+i,cr[i])
     #orders the syndromes in descending order in term of the occurrences
     ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}   
-    syndromes = list(ordered_res)[::-1]
-    syndromes = syndromes[:3]           #take just the first three
+    syndromes = list(ordered_res)[::-1] #take just the first three
     return syndromes
 
 #------------------------------------------------------------------------------------
