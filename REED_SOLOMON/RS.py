@@ -7,7 +7,6 @@ import numpy as np
 from numpy.polynomial import Polynomial
 from qiskit.providers.aer import AerSimulator
 from qiskit.circuit.library import QFT
-from qiskit.providers.aer.noise import NoiseModel
 from qiskit.visualization import plot_histogram
 
 #Needed in order to load the ibm-mps simulator for an optimal simulation
@@ -28,7 +27,7 @@ K = (2**k_cl) - delta                           #Number of classical bits sent, 
 ENC = k_cl*(2**k_cl - 1)                        #Total encoding Qbits needed
 encode_reg = QuantumRegister(ENC+2*k_cl*K)		#Quantum Register used to construct the full circuit
 ecc = floor((K+1)/2)								#Maximum error correction capability per symbol
-shots = 128					#Number of shots in the simulation
+shots = 128
 
 #Initialization of the parameters is completed
 print("")
@@ -55,13 +54,14 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse
 #SIMULATES THE CIRCUIT
 
 def simulate(circ):
-	"""Simulates the circuit using the cloud-computing services of IBMq, this is always the recommended choice to run simulations"""
-	provider = IBMQ.get_provider(hub='ibm-q')
-	result = execute(circ, provider.get_backend('simulator_mps'),shots=shots).result()
-	print('Simulation Success: {}'.format(result.success))
-	print("Time taken: {} sec".format(result.time_taken))
-	counts = result.get_counts(0)
-	return counts
+    """Simulates the circuit using the cloud-computing services of IBMq, this is always the recommended choice to run simulations"""
+    provider = IBMQ.get_provider(hub='ibm-q')
+    backend=provider.get_backend('simulator_mps')
+    result = execute(circ, backend,shots=shots).result()
+    print('Simulation Success: {}'.format(result.success))
+    print("Time taken: {} sec".format(result.time_taken))
+    counts = result.get_counts(0)
+    return counts
 
 #------------------------------------------------------------------------------------
 
@@ -143,10 +143,10 @@ def error_locator(syn):
         try:                                              #uses functions in the unireedsolomon library to compute the error locations bf, pf
             bf = error_string(BFsyndrome)
             pf = error_string(PFsyndrome)
-            return bf,pf,x[::-1]
+            return bf,pf,x
         except (RSCodecError,ValueError):
             continue
-    print("No valid syndrome was found, try increasing the number of shots.")
+    print("No valid syndrome was found, too many errors try increasing the number of shots.")
     exit()
 
 #------------------------------------------------------------------------------------
@@ -189,8 +189,6 @@ def decoder(circ):
     """Takes the circuits that computes the syndrome (given by syn_circuit) and returns the original message along with occurrences"""
     syn = get_syndrome(circ)
     bf,pf,x = error_locator(syn)
-    print(bf)
-    print(pf)
     if(bf != "1" or x[:k_cl*K] != "0"*k_cl*K):
         for i in range(len(bf)):
             if (bf[i] == "1"):
@@ -221,7 +219,6 @@ def send_message(initial_state):
     """Auxiliary testing function, sends the message contained in the file states.txt and returns the simulation circuit."""
     qc = encoder(initial_state)
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
-    qc.x()
     qc = syn_circuit(qc)
     retrieved,syn,occurrences = decoder(qc)
     plot_histogram(occurrences, color='midnightblue', title="Message occurrences").savefig("histogram.png")
@@ -230,7 +227,7 @@ def send_message(initial_state):
     print("Compared with: ")
     for i in initial_state:
         print(i,"\n")
-    print("Syndrome was: ", syn)
+    print("Syndrome was: ", syn[::-1])
     qc.draw(output='mpl', filename='prova.png')
     return qc
 
