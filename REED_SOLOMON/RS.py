@@ -90,7 +90,7 @@ def get_qbits(circ):
         circ.measure(i, cr[i])
     results = simulate(circ)
     qbits = max(results, key=results.get)
-    plot_histogram(job.result().get_counts(), color='midnightblue', title="Message occurrences")
+    plot_histogram(results, color='midnightblue', title="Message occurrences")
     return qbits,results
 
 def get_syndrome(circ):
