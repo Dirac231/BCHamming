@@ -135,7 +135,8 @@ def error_string(classical_syn):
     
 def error_locator(syn):
     """take the syndrome computed by the quantum circuit and apply error_string"""
-    for x in syn:  
+    for x in syn:
+    	x = x[::-1]  
         BFsyndrome = oct(int((x)[:k_cl*K],2))[2:]         #bit flip syndrome string
         PFsyndrome = oct(int((x)[k_cl*K:],2))[2:]         #phase flip syndrome string
 
@@ -218,7 +219,7 @@ def decoder(circ):
 def send_message(initial_state):
     """Auxiliary testing function, sends the message contained in the file states.txt and returns the simulation circuit."""
     qc = encoder(initial_state)
-    qc.x(2)
+    qc.z(2)
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
     qc = syn_circuit(qc)
     retrieved,syn,occurrences = decoder(qc)
