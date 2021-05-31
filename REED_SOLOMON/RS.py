@@ -58,7 +58,7 @@ def simulate_MPS(circ):
 
 def simulate(circ):
 	provider = IBMQ.get_provider(hub='ibm-q')
-	result = execute(circ, provider.get_backend('simulator_mps'),shots=shots).result()
+	result = execute(circ, provider.get_backend('simulator_mps'),shots=512).result()
 	print('Simulation Success: {}'.format(result.success))
 	print("Time taken: {} sec".format(result.time_taken))
 	counts = result.get_counts(0)
