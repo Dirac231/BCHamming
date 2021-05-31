@@ -145,7 +145,7 @@ def error_locator(syn):
             bf = error_string(BFsyndrome)
             pf = error_string(PFsyndrome)
             return bf,pf,x
-        except (RSCodecError):
+        except (RSCodecError, ValueError):
             continue
     print("No valid syndrome was found, try increasing the number of shots.")
     exit()
