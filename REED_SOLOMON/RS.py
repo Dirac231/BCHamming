@@ -24,7 +24,7 @@ initial_state = np.loadtxt('states.txt')
 k_cl = len(initial_state)      					#Order of the finite field in terms of powers of 2, corresponds to the amount of qbits sent
 
 delta = floor((2**k_cl-1)/2+2)                  #Classical optimal minimum distance of the code
-K = (2**k_cl) - delta                           #Number of classical bits sent, directly related to the error-correcting capability of the code ecc = floor((K)/2) 
+K = (2**k_cl) - delta                           #Number of classical bits sent, directly related to the error-correcting capability of the code ecc = floor((K+1)/2) 
 ENC = k_cl*(2**k_cl - 1)                        #Total encoding Qbits needed
 encode_reg = QuantumRegister(ENC+2*k_cl*K)		#Quantum Register used to construct the full circuit
 ecc = floor((K+1)/2)								#Maximum error correction capability per symbol
