@@ -6,6 +6,8 @@ import numpy as np
 from numpy.polynomial import Polynomial
 from qiskit.providers.aer import AerSimulator
 from qiskit.circuit.library import QFT
+from qiskit.visualization import plot_histogram
+
 
 IBMQ.save_account(TOKEN)   #Optional but strongly recommended, needed in order to load the ibm-mps simulator for optimal simulation
 provider = IBMQ.load_account()
