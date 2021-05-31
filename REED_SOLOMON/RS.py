@@ -2,10 +2,12 @@ from qiskit import *
 from unireedsolomon import *
 from matplotlib import *
 from math import *
+from collections import defaultdict
 import numpy as np
 from numpy.polynomial import Polynomial
 from qiskit.providers.aer import AerSimulator
 from qiskit.circuit.library import QFT
+from qiskit.providers.aer.noise import NoiseModel
 from qiskit.visualization import plot_histogram
 
 #Needed in order to load the ibm-mps simulator for an optimal simulation
@@ -36,7 +38,7 @@ print("Parameters of the code: ")
 print("-------------------------------------------")
 print("Encoding Qbits: ", ENC)
 print("Sent Qbits: ", k_cl*(2**k_cl-1-2*K))
-print("Maximum error-correcting: ", ecc, "/Symbol = ", ecc*k_cl, "Total encoding errors")
+print("Maximum error-correcting: ", ecc, "/Symbol = ", ecc*k_cl, "/Encoded Qbit")
 print("-------------------------------------------")
 
 #--------------------------------------------------------------------------------------
@@ -97,7 +99,7 @@ def get_syndrome(circ):
         circ.measure(ENC+i,cr[i])
     #orders the syndromes in descending order in term of the occurrences
     ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}  
-    syndromes = list(ordered_res)[::-1] #takes just the first three more likely
+    syndromes = list(ordered_res)[::-1]
     return syndromes
 
 #------------------------------------------------------------------------------------
@@ -203,7 +205,11 @@ def decoder(circ):
             circ.h(i)
     circ.append(fourier, encode_reg[:ENC])
     message,occurrences = get_qbits(circ)
-    occurrences = dict(zip([x[:3][::-1] for x in list(occurrences.keys())] , list(occurrences.values())))
+    occurrences = zip([x[:3][::-1] for x in occurrences.keys()] , list(occurrences.values()))
+    D = defaultdict(int)
+    for k,v in occurrences:
+    	D[k]+= int(v)
+    occurrences = dict(D)
     return message,x,occurrences
 
 #------------------------------------------------------------------------------------
@@ -212,7 +218,7 @@ def decoder(circ):
 def send_message(initial_state):
     """Auxiliary testing function, sends the message contained in the file states.txt and returns the simulation circuit."""
     qc = encoder(initial_state)
-
+    qc.x(2)
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
     qc = syn_circuit(qc)
     retrieved,syn,occurrences = decoder(qc)
