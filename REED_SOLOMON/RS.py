@@ -9,7 +9,6 @@ from qiskit.circuit.library import QFT
 from qiskit.visualization import plot_histogram
 
 #Needed in order to load the ibm-mps simulator for an optimal simulation
-
 provider = IBMQ.load_account()
 
 #PARAMETERS SETUP
@@ -30,14 +29,14 @@ ecc = floor((K)/2)								#Maximum error correction capability per symbol
 
 
 #Initialization of the parameters is completed
-print("\n")
-print("Reading from file -> Found ",k_cl," Qbits: \n")
+print("")
+print("Reading from file: found ",k_cl," Qbits: \n")
 
-print("Parameters of the code: \n")
+print("Parameters of the code: ")
 print("-------------------------------------------")
 print("Encoding Qbits: ", ENC)
 print("Sent Qbits: ", k_cl*(2**k_cl-1-2*K))
-print("Maximum error-correcting: ", ecc, "/Symbol = ", ecc*k_cl, "/Encoded Qbit")
+print("Maximum error-correcting: ", ecc, "/Symbol = ", ecc*k_cl, "Total encoding errors")
 print("-------------------------------------------")
 
 #--------------------------------------------------------------------------------------
@@ -56,7 +55,7 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse
 def simulate(circ):
 	"""Simulates the circuit using the cloud-computing services of IBMq, this is always the recommended choice to run simulations"""
 	provider = IBMQ.get_provider(hub='ibm-q')
-	result = execute(circ, provider.get_backend('simulator_mps'),shots=512).result()
+	result = execute(circ, provider.get_backend('simulator_mps'),shots=128).result()
 	print('Simulation Success: {}'.format(result.success))
 	print("Time taken: {} sec".format(result.time_taken))
 	counts = result.get_counts(0)
@@ -98,15 +97,15 @@ def get_syndrome(circ):
         circ.measure(ENC+i,cr[i])
     #orders the syndromes in descending order in term of the occurrences
     ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}  
-    syndromes = list(ordered_res)[::-1]
+    syndromes = list(ordered_res)[::-1] #takes just the first three more likely
     return syndromes
 
 #------------------------------------------------------------------------------------
 
 #GIVEN THE CLASSICAL SYNDROME, RETURNS THE POSITIONS OF THE ERRORS USING CLASSICAL BERLEKAMP-MASSEY
 
+#Performs a Berlekamp-Massey algorithm in order to find the error locator polynomial relative to the syndrome#
 def error_string(classical_syn):
-    '''Performs a Berlekamp-Massey algorithm in order to find the error locator polynomial relative to the syndrome'''
     k1 = int(ENC/k_cl)
     k2 = int(((ENC-K*k_cl)/k_cl))
     prime = int(hex(find_prime_polynomials(c_exp=k_cl,single=True)),16)
@@ -150,7 +149,7 @@ def error_locator(syn):
 
 #------------------------------------------------------------------------------------
 
-#ENCODING CIRCUIT
+"""ENCODING: takes a message and return the circuit that encodes it"""
 
 def encoder(initial_state):
     """Takes a message and return the circuit that encodes it"""
@@ -204,16 +203,16 @@ def decoder(circ):
             circ.h(i)
     circ.append(fourier, encode_reg[:ENC])
     message,occurrences = get_qbits(circ)
-    occurrences = dict(zip([x[:3] for x in list(occurrences.keys())] , list(occurrences.values())))
+    occurrences = dict(zip([x[:3][::-1] for x in list(occurrences.keys())] , list(occurrences.values())))
     return message,x,occurrences
 
 #------------------------------------------------------------------------------------
 
-#DOES EVERYTHING, GIVEN THE INITIAL STATES
 
 def send_message(initial_state):
-    '''Auxiliary testing function, sends the message contained in the file states.txt and returns the simulation circuit.'''
+    """Auxiliary testing function, sends the message contained in the file states.txt and returns the simulation circuit."""
     qc = encoder(initial_state)
+
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
     qc = syn_circuit(qc)
     retrieved,syn,occurrences = decoder(qc)
@@ -228,5 +227,4 @@ def send_message(initial_state):
 
 #------------------------------------------------------------------------------------
 
-#Call the function that does everything
 qc = send_message(initial_state)
