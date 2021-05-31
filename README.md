@@ -2,27 +2,34 @@
 
 This repository was created for the Europe Qiskit Hackaton 2021. It focuses on re-purpusing classic error correction code and make it Quantum
 
-# Quantum Hamming Code
+## Folder structure
+
+`Hamming\`: Contains the implementation of the quantum Hamming code  
+`REED_SOLOMON\`: Contains the implementation of the quantum Reed Solomon  
+`Slides.pdf`: Slides in pdf format of the Hackaton Project  
+
+
+## Quantum Hamming Code
 
 Suppose you have a message |m> that is long n bits and you want to encode it in a noise resistant message |M>.
 
-To do so you have to create a quantum cirucuit that is big enough to be able to hold |M> and additional ancillas (ancillas are required only for the syndrome).
+To do so you have to create a quantum circuit that is big enough to be able to hold |M> and additional ancillas (ancillas are required only for the syndrome).
 
 To know how big has to be the circuit call the function 
 
 ```python
-HammingSize(n,gate,kind):
-    """Gives you the size of the circuit
+def HammingSize(n, gate, kind):
+    """Gives you the number of qubits that must be present in the circuit
     Args:
         n (int): lenght of the input message
-        gate (str): it's either 'encoder' or 'decoder'
+        gate (str): It's either 'encoder' or 'decoder'
         kind (str): The kind argument must be one of bit, phase or both
 
     Returns:
-        N (int): size of the gate
+        n (int): Number of qubits required for the circuit
     """
-    
-HammingOrder(n):
+
+def HammingOrder(n):
     """Gives you the order of the Hamming gate as a function of n
 
     Args:
@@ -36,8 +43,11 @@ HammingOrder(n):
 Once you know how big is the circuit you can use the gates
 
 ```python
-Hamming_encode(N):
-    """Returns a hamming encoding circuit
+def HammingEncode(N, kind="both", name="Hamming encoder"):
+    """Returns a hamming encoding circuit of order N, to see which is the value
+    of N required to encode n qubits you can use the HammingOrder function. 
+    To see the number of input qubits required for this circuit you can call 
+    the function HammingSize()
 
     Args:
         N (int): Order of the hamming code used, acts on 2^N qubits
@@ -46,12 +56,15 @@ Hamming_encode(N):
         Defaults to "both".
 
     Returns:
-        Gates: The gates composing the circuit
+        Gates: Hamming encode
     """
 
-Hamming_decode(N, kind="both",read=True, name="Hamming decoder"):
+def HammingDecode(N, kind="both", read=True, name="Hamming decoder"):
     """It corrects the output, if you don't want to read the output just write read=False, that way
-    the bits don't get switched
+    the bits don't get switched.
+    To see the number of input qubits required for this circuit you can call 
+    the function HammingSize()
+
 
     Args:
         N (int): The order of the Hamming code
@@ -60,7 +73,8 @@ Hamming_decode(N, kind="both",read=True, name="Hamming decoder"):
         name (str): The name written on the gate. Defaults to "Hamming decoder".
 
     Returns:
-        gate : Hamming decode
+        gate: Hamming decode
     """
+```
 
-# Reed-Solomon
+## Quantum Reed-Solomon
