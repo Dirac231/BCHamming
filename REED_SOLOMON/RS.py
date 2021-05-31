@@ -194,14 +194,12 @@ def decoder(circ):
         for i in range(len(bf)):
             if (bf[i] == 1):
                 circ.x(i)
-                print("Found bit-flip error at position: ", i)
     if (pf != "1" or x != "0"*k_cl*K*2):
         for i in range(ENC):
             circ.h(i)
         for i in range(len(pf)):
             if (pf[i] == 1):
                 circ.z(i)
-                print("Found phase-flip error at position: ", i)
         for i in range(ENC):
             circ.h(i)
     circ.append(fourier, encode_reg[:ENC])
