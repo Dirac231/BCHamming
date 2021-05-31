@@ -226,7 +226,7 @@ def send_message(initial_state):
     print("Compared with: ")
     for i in initial_state:
         print(i,"\n")
-    print("Syndrome was: ", syn[::-1])
+    print("Syndrome was: ", syn)
     return qc
 
 #------------------------------------------------------------------------------------
