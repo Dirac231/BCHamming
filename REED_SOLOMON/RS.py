@@ -105,8 +105,8 @@ def get_syndrome(circ):
 
 #GIVEN THE CLASSICAL SYNDROME, RETURNS THE POSITIONS OF THE ERRORS USING CLASSICAL BERLEKAMP-MASSEY
 
-#Performs a Berlekamp-Massey algorithm in order to find the error locator polynomial relative to the syndrome#
 def error_string(classical_syn):
+    '''Performs a Berlekamp-Massey algorithm in order to find the error locator polynomial relative to the syndrome'''
     k1 = int(ENC/k_cl)
     k2 = int(((ENC-K*k_cl)/k_cl))
     prime = int(hex(find_prime_polynomials(c_exp=k_cl,single=True)),16)
@@ -150,7 +150,7 @@ def error_locator(syn):
 
 #------------------------------------------------------------------------------------
 
-"""ENCODING: takes a message and return the circuit that encodes it"""
+#ENCODING CIRCUIT
 
 def encoder(initial_state):
     """Takes a message and return the circuit that encodes it"""
@@ -209,9 +209,10 @@ def decoder(circ):
 
 #------------------------------------------------------------------------------------
 
-#Auxiliary testing function, sends the message contained in the file states.txt and returns the simulation circuit.
+#DOES EVERYTHING, GIVEN THE INITIAL STATES
+
 def send_message(initial_state):
-    """Does everything, given the inital_state"""
+    '''Auxiliary testing function, sends the message contained in the file states.txt and returns the simulation circuit.'''
     qc = encoder(initial_state)
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
     qc = syn_circuit(qc)
@@ -227,4 +228,5 @@ def send_message(initial_state):
 
 #------------------------------------------------------------------------------------
 
+#Call the function that does everything
 qc = send_message(initial_state)
