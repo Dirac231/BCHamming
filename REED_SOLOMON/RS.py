@@ -217,7 +217,6 @@ def decoder(circ):
 def send_message(initial_state):
     """Auxiliary testing function, sends the message contained in the file states.txt and returns the simulation circuit."""
     qc = encoder(initial_state)
-    qc.z(2)
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
     qc = syn_circuit(qc)
     retrieved,syn,occurrences = decoder(qc)
