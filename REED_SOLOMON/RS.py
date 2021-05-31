@@ -30,7 +30,7 @@ ecc = floor((K)/2)								#Maximum error correction capability per symbol
 
 
 #Initialization of the parameters is completed
-
+print("\n")
 print("Reading from file -> Found ",k_cl," Qbits")
 print("Parameters of the code: \n")
 print("-------------------------------------------")
@@ -86,7 +86,6 @@ def get_qbits(circ):
 		circ.measure(i, cr[i])
 	results = simulate(circ)
 	qbits = max(results, key=results.get)
-	plot_histogram(results, color='midnightblue', title="Message occurrences").savefig("histogram.png")
 	return qbits,results
 
 
@@ -204,6 +203,7 @@ def decoder(circ):
             circ.h(i)
     circ.append(fourier, encode_reg[:ENC])
     message,occurrences = get_qbits(circ)
+    occurrences = dict(zip([x[:3] for x in list(occurrences.keys())] , list(occurrences.values())))
     return message,x,occurrences
 
 #------------------------------------------------------------------------------------
@@ -216,6 +216,7 @@ def send_message(initial_state):
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
     qc = syn_circuit(qc)
     retrieved,syn,occurrences = decoder(qc)
+    plot_histogram(occurrences, color='midnightblue', title="Message occurrences").savefig("histogram.png")
     print("Most probable message: ", retrieved[:3][::-1])
     print("Occurrences: ", occurrences)
     print("Compared with: ")
