@@ -27,13 +27,18 @@ def is_power_2(n):
     return n & (n-1) == 0
 
 
-def HammingCircuit(N, ClassicalRegisters=None, name=None, ancillas=None):
+def HammingCircuit(N, classical_registers=False, name=None, ancillas=None):
+    """it gives you a circuit with 2^N qbits of (message + redundancy)
+
+    Args:
+        N (int): Order of the Hamming cirucit
+        ClassicalRegisters (Bool, int): If True if gives an amount of classical registers equal to the number of qbits, if you want a specific number of classical registers just write the number you want. Defaults to False.
+        name (str): Name of the circuit. Defaults to None.
+        ancillas (int): Is the number of ancillas of the circuit. Defaults to zero.
+
+    Returns:
+        circuit: Returns a circuit with just the qbits labeled as the parity and signal
     """
-    -Returns a circuit with just the qbits labeled as the parity and signal
-    -it gives you a circuit with 2^N qbits of (message + redundancy)
-    -it can have classical registers if you want set ClassicalRegisters=True, if given a int "n" it will have 
-    n classical registers
-    by default it will have N ancillas, if specified it will have a number ancillas"""
     
     if ancillas is None: ancillas = 2*N-1
     registers=[]
@@ -41,9 +46,9 @@ def HammingCircuit(N, ClassicalRegisters=None, name=None, ancillas=None):
         prefix='s' #s stands for signal
         if i==0 or np.log2(i)==int(np.log2(i)): prefix='p' #c stands for parity
         registers.append(QuantumRegister(1,prefix+num_to_binary(i, N)))
-    if ClassicalRegisters!=None: 
-        if ClassicalRegisters==True: registers.append(ClassicalRegister(2**N + ancillas))
-        else: registers.append(ClassicalRegister(ClassicalRegisters))
+    if classical_egisters!=False: 
+        if classical_egisters==True: registers.append(ClassicalRegister(2**N + ancillas))
+        else: registers.append(ClassicalRegister(classical_egisters))
 
     if ancillas > 0: registers.append(QuantumRegister(ancillas))
     circuit=QuantumCircuit(*registers) #circuit already with ancillas
@@ -172,7 +177,7 @@ def Hamming_decode(N, kind="both",read=True, name="Hamming decoder"):
         name (str): The name written on the gate. Defaults to "Hamming decoder".
 
     Returns:
-        [type]: [description]
+        gate: Hamming decode
     """
     is_valid_input(kind)
 

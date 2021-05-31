@@ -1,0 +1,46 @@
+% \documentclass[preview]{standalone}
+% If the image is too large to fit on this documentclass use
+\documentclass[draft]{beamer}
+% img_width = 24, img_depth = 9
+\usepackage[size=custom,height=36,width=21,scale=0.7]{beamerposter}
+% instead and customize the height and width (in cm) to fit.
+% Large images may run out of memory quickly.
+% To fix this use the LuaLaTeX compiler, which dynamically
+% allocates memory.
+\usepackage[braket, qm]{qcircuit}
+\usepackage{amsmath}
+\pdfmapfile{+sansmathaccent.map}
+% \usepackage[landscape]{geometry}
+% Comment out the above line if using the beamer documentclass.
+\begin{document}
+
+\begin{equation*}
+    \Qcircuit @C=1.0em @R=0.2em @!R {
+	 	\lstick{ {p0000}_{0} :  } & \gate{\mathrm{H}} & \ctrl{1} & \qw & \ctrl{2} & \multigate{15}{\mathrm{Hamming\,encoder}} & \qw & \multigate{22}{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {p0001}_{0} :  } & \qw & \targ & \gate{\mathrm{X}} & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {p0010}_{0} :  } & \qw & \qw & \qw & \targ & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s0011}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {p0100}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s0101}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \gate{\mathrm{Y}} & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s0110}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s0111}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {p1000}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s1001}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s1010}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s1011}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s1100}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s1101}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s1110}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {s1111}_{0} :  } & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,encoder}} & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {q0}_{0} :  } & \qw & \qw & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {q0}_{1} :  } & \qw & \qw & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {q0}_{2} :  } & \qw & \qw & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {q0}_{3} :  } & \qw & \qw & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {q0}_{4} :  } & \qw & \qw & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {q0}_{5} :  } & \qw & \qw & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{ {q0}_{6} :  } & \qw & \qw & \qw & \qw & \qw & \qw & \ghost{\mathrm{Hamming\,decoder}} & \qw & \qw\\
+	 	\lstick{c0:} & \lstick{/_{_{23}}} \cw & \cw & \cw & \cw & \cw & \cw & \cw & \cw & \cw\\
+	 }
+\end{equation*}
+
+\end{document}
