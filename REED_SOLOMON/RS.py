@@ -46,7 +46,7 @@ print("-------------------------------------------")
 #A quantum fourier transform is used both for encoding and decoding purposes
 
 fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse=False, insert_barriers=False, name='qft')
-inv_fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse=True, insert_barriers=False, name='qft-1')
+inv_fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse=True, insert_barriers=False, name='qft-inverse')
 
 #-----------------------------------------------------------------------------------
 
@@ -212,7 +212,6 @@ def decoder(circ):
 def send_message(initial_state):
     """Does everything, given the inital_state"""
     qc = encoder(initial_state)
-
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
     qc = syn_circuit(qc)
     retrieved,syn,occurrences = decoder(qc)
