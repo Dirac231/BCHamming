@@ -98,7 +98,7 @@ def get_syndrome(circ):
         circ.measure(ENC+i,cr[i])
     #orders the syndromes in descending order in term of the occurrences
     ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}  
-    syndromes = list(ordered_res)[::-1] #takes just the first three more likely
+    syndromes = list(ordered_res)[::-1]
     return syndromes
 
 #------------------------------------------------------------------------------------
