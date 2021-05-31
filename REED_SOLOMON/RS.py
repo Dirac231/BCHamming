@@ -15,8 +15,6 @@ provider = IBMQ.load_account()
 #The code is built so that everything is a function of k_cl, the order of the finite field.
 
 k_cl = int(input("Lenght of message: "))        #Order of the finite field in terms of powers of 2
-appr = int(input("QFT approximation degree (the lower the better): ")) 
-shots = int(input("Number of shots: ")) 
 
 delta = floor((2**k_cl-1)/2+2)                  #Classical optimal minimum distance of the code
 K = (2**k_cl) - delta                           #Number of classical bits sent
@@ -43,8 +41,8 @@ if (len(initial_state) != k_cl):
 
 #QTF IMPLEMENTATION
 
-fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inverse=False, insert_barriers=False, name='qft')
-inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inverse=True, insert_barriers=False, name='qft-1')
+fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse=False, insert_barriers=False, name='qft')
+inv_fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse=True, insert_barriers=False, name='qft-1')
 
 #-----------------------------------------------------------------------------------
 
@@ -52,7 +50,7 @@ inv_fourier = QFT(num_qubits=ENC, approximation_degree=appr, do_swaps=True, inve
 
 def simulate_MPS(circ):
     """Simulate the circuit with matrix product state and return the list of results"""
-    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=shots).result()
+    result = execute(circ, Aer.get_backend('aer_simulator_matrix_product_state'), shots=512).result()
     print('Simulation Success: {}'.format(result.success))
     print("Time taken: {} sec".format(result.time_taken))
     counts = result.get_counts(0)
@@ -100,7 +98,7 @@ def get_syndrome(circ):
         circ.measure(ENC+i,cr[i])
     #orders the syndromes in descending order in term of the occurrences
     ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}   
-    syndromes = list(ordered_res)[::-1] #take just the first three
+    syndromes = (list(ordered_res)[::-1])[:3] #take just the first three
     return syndromes
 
 #------------------------------------------------------------------------------------
@@ -225,4 +223,4 @@ def send_message(initial_state):
 
 #------------------------------------------------------------------------------------
 
-send_message(initial_state)
+qc = send_message(initial_state)
