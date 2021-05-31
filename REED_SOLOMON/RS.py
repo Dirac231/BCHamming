@@ -86,7 +86,7 @@ def get_qbits(circ):
 		circ.measure(i, cr[i])
 	results = simulate(circ)
 	qbits = max(results, key=results.get)
-	plot_histogram(results, color='midnightblue', title="Message occurrences".savefig("histogram.png"))
+	plot_histogram(results, color='midnightblue', title="Message occurrences").savefig("histogram.png")
 	return qbits,results
 
 
