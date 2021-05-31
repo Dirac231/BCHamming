@@ -1,7 +1,7 @@
 from qiskit import *
 from unireedsolomon import *
 from matplotlib import *
-from math import pi, floor
+from math import *
 import numpy as np
 from numpy.polynomial import Polynomial
 from qiskit.providers.aer import AerSimulator
@@ -31,7 +31,8 @@ ecc = floor((K)/2)								#Maximum error correction capability per symbol
 
 #Initialization of the parameters is completed
 print("\n")
-print("Reading from file -> Found ",k_cl," Qbits")
+print("Reading from file -> Found ",k_cl," Qbits: \n")
+
 print("Parameters of the code: \n")
 print("-------------------------------------------")
 print("Encoding Qbits: ", ENC)
@@ -97,7 +98,7 @@ def get_syndrome(circ):
         circ.measure(ENC+i,cr[i])
     #orders the syndromes in descending order in term of the occurrences
     ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}  
-    syndromes = (list(ordered_res)[::-1])[:3] #takes just the first three more likely
+    syndromes = list(ordered_res)[::-1] #takes just the first three more likely
     return syndromes
 
 #------------------------------------------------------------------------------------
