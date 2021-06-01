@@ -107,7 +107,6 @@ def Encoder(N):
         p = 2**p
         [qc.cx(i, p) for i in range(2**N) if (i & p) == p and i != p]
 
-
     return qc.to_gate(label="Encoder")
 
 
@@ -176,6 +175,8 @@ def HammingEncode(N, kind="both", name="Hamming encoder"):
 
     if kind == "both": 
         qc = HammingCircuit(N+1, ancillas=0)
+    else:
+        qc = HammingCircuit(N, ancillas=0)
 
     if kind in ["bit", "both"]:
         qc.append(Hamming_bit_encoder(N), [*range(2**N)])
@@ -267,6 +268,7 @@ def xor(N):
     for i in range(1,nqubits):
         for j in range(0,N):
             if i & 2**j == 2**j: circ.cx(i,nqubits+j)
+            
     return circ.to_gate(label='Initialize')
 
 
