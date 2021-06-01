@@ -18,6 +18,7 @@ def HammingEncode(n, kind="both", name="Hamming encoder"):
     is_valid_input(kind) #check if the kind of input is valid
     N=HammingOrder(n) #Calculates the order of the Hamming code
 
+
     if kind !="both":
         return Hamming_bit_encoder(N,name=name,kind=kind)
     
@@ -100,3 +101,4 @@ def HammingSize(n, gate='decoder', kind='both'):
         return 2**N + N
     
     raise Exception('Gate not valid, the input must be either \'encoder\' or \'decoder\'')
+
