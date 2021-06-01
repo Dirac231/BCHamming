@@ -154,24 +154,22 @@ def is_valid_input(kind):
     return True
 
 
-def HammingEncode(N, kind="both", name="Hamming encoder"):
-    """Returns a hamming encoding circuit of order N, to see which is the value
-    of N required to encode n qubits you can use the HammingOrder function. 
+def HammingEncode(n, kind="both", name="Hamming encoder"):
+    """Returns a hamming encoding circuit capable of encodig at least n Qbits 
     To see the number of input qubits required for this circuit you can call 
     the function HammingSize()
 
     Args:
         N (int): Order of the hamming code used, acts on 2^N qubits
-        kind (str, optional): Set to "bit" for correcting bit flip errors,
+        kind (str): Set to "bit" for correcting bit flip errors,
         "phase" for correcting phase flip errors, "both" corrects both errors. 
         Defaults to "both".
 
     Returns:
         Gates: Hamming encode
     """
-
-    if not is_valid_input(kind):
-        return
+    is_valid_input(kind)
+    N=HammingOrder(n)
 
     if kind == "both": 
         qc = HammingCircuit(N+1, ancillas=0)
@@ -187,9 +185,8 @@ def HammingEncode(N, kind="both", name="Hamming encoder"):
     return qc.to_gate(label=name)
 
 
-def HammingDecode(N, kind="both", read=True, name="Hamming decoder"):
-    """It corrects the output, if you don't want to read the output just write read=False, that way
-    the bits don't get switched.
+def HammingDecode(n, kind="both", read=True, name="Hamming decoder"):
+    """It corrects the output, if you don't want to read the output just write read=False.
     To see the number of input qubits required for this circuit you can call 
     the function HammingSize()
 
@@ -204,6 +201,7 @@ def HammingDecode(N, kind="both", read=True, name="Hamming decoder"):
         gate: Hamming decode
     """
     is_valid_input(kind)
+    N=HammingOrder(n)
 
     if kind == "both": 
         N += 1
