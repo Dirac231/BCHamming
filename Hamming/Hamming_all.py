@@ -41,7 +41,7 @@ def HammingCircuit(N, classical_registers=False, name=None, ancillas=None):
     registers=[]
     for i in range(2**N):
         prefix='s' #s stands for signal
-        if i==0 or np.log2(i)==int(np.log2(i)): prefix='p' #c stands for parity
+        if is_power_2(i): prefix='p' #c stands for parity
         registers.append(QuantumRegister(1,prefix+num_to_binary(i, N)))
     if classical_registers!=False: 
         if classical_registers==True: registers.append(ClassicalRegister(2**N + ancillas))
