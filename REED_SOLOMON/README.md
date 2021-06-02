@@ -24,7 +24,7 @@ def decoder(qc):
     Returns: decoding circuit, retrieved message, outcomes of measurements, syndrome.
     """
 ```
-By default, this function will return the full decoding circuit and the retrieved message with the occurences of the measurements. The simulation function used to retrieve the syndrome when calling `get_syndrome(qc)` or `get_qbits(qc)` is:
+The simulation function used to retrieve the syndrome when calling `get_syndrome(qc)` or `get_qbits(qc)` is:
 
 ```python
 def simulate(qc):
