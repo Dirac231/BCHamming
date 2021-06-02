@@ -27,7 +27,7 @@ K = (2**k_cl) - delta                           #Number of classical bits sent, 
 ENC = k_cl*(2**k_cl - 1)                        #Total encoding Qbits needed
 encode_reg = QuantumRegister(ENC+2*k_cl*K)		#Quantum Register used to construct the full circuit
 ecc = floor((K+1)/2)								#Maximum error correction capability per symbol
-shots = 128
+shots = 100
 
 #Initialization of the parameters is completed
 print("")
