@@ -64,7 +64,19 @@ def decoder(qc):
     
     return qc,message,x,occurrences
 ```
-By default, this function will return the full decoding circuit and the retrieved message with the occurences of the measurements.  
+By default, this function will return the full decoding circuit and the retrieved message with the occurences of the measurements. The simulation function used to retrieve the syndrome when calling `get_syndrome(qc)` or `get_qbits(qc)` is:
+
+```python
+def simulate(qc):
+    """Simulates the circuit using the cloud-computing services of IBMq, this is always the recommended choice to run simulations"""
+    provider = IBMQ.get_provider(hub='ibm-q')
+    backend=provider.get_backend('simulator_mps')
+    result = execute(qc, backend,shots=shots).result()
+    print('Simulation Success: {}'.format(result.success))
+    print("Time taken: {} sec".format(result.time_taken))
+    counts = result.get_counts(0)
+    return counts
+```
 
 ## Installation
 First, run `python3 -m pip install -r requirements.txt`. After that, if you wish to encode using a file, place the file `RS.py` in the same directory as `states.txt`, or alternatively, simply declare the variable `initial_state` as before. You can then use the functions inside of the file.
