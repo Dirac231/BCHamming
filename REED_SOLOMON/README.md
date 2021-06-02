@@ -79,4 +79,6 @@ def simulate(qc):
 ```
 
 ## Installation
+To clone the repository: `git clone https://github.com/Dirac231/BCHamming/`  
+
 First, run `python3 -m pip install -r requirements.txt`. After that, if you wish to encode using a file, place the file `RS.py` in the same directory as `states.txt`, or alternatively, simply declare the variable `initial_state` as before. You can then use the functions inside of the file `RS.py`
