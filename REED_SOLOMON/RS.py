@@ -7,7 +7,6 @@ import numpy as np
 from numpy.polynomial import Polynomial
 from qiskit.providers.aer import AerSimulator
 from qiskit.circuit.library import QFT
-from qiskit.providers.aer.noise import NoiseModel
 from qiskit.visualization import plot_histogram
 
 #PARAMETERS SETUP
