@@ -10,59 +10,19 @@ Will initialize the state `|0>|0>|1>`. Please note that in order to run simulati
 
 ```python
 def encoder(initial_state):
-    """Takes a message and return the circuit that encodes it"""
-    qc = QuantumCircuit(encode_reg)
-    for i in range(0,k_cl):
-        qc.initialize(initial_state[i], i) 
-    for i in range(k_cl*(K + 1), ENC-k_cl*K):
-        qc.initialize(initial_state[i], i)
-    for i in range(ENC - k_cl*K,ENC):
-        qc.h(i)
-    qc.append(inv_fourier, encode_reg[:ENC])
-    return qc
+    """Takes a message and return the circuit that encodes it.
+    Input: list of binary lists, as initial_state = [ [1,0],[1,0],[0,1]]
+    Returns: encoding circuit
+    """
 ```
 which by default returns the encoding circuit. The decoding happens inside the function:
 
 ```python
 def decoder(qc):
-    """Takes the ecoding circuit, computes the syndrome and corrects the message"""
-    qc.append(fourier, encode_reg[:ENC])
-    for i in range(k_cl+1,k_cl*(K+1)+1):
-        qc.cx(i-1, i+ENC-k_cl-1)
-    for i in range(ENC -k_cl*K, ENC):
-        qc.h(i)
-    for i in range(ENC-k_cl*K-1,ENC-1):
-        qc.cx(i+1, i+ENC-k_cl+1)
-    for i in range(ENC -k_cl*K-1, ENC-1):
-        qc.h(i+1)
-    qc.append(inv_fourier, encode_reg[:ENC])
- 
-    syn = get_syndrome(qc)
-    bf,pf,x = error_locator(syn)
-    if(bf != "1" or x[:k_cl*K] != "0"*k_cl*K):
-        for i in range(len(bf)):
-            if (bf[i] == "1"):
-                qc.x(i)
-    if (pf != "1" or x[k_cl*K:] != "0"*k_cl*K):
-        for i in range(ENC):
-            qc.h(i)
-
-        for i in range(len(pf)):
-            if (pf[i] == "1"):
-                qc.z(i)
-
-        for i in range(ENC):
-            qc.h(i)
-    qc.append(fourier, encode_reg[:ENC])
-    
-    message,occurrences = get_qbits(qc)
-    occurrences = zip([x[:3][::-1] for x in occurrences.keys()] , list(occurrences.values()))
-    D = defaultdict(int)
-    for k,v in occurrences:
-        D[k]+= int(v)
-    occurrences = dict(D)
-    
-    return qc,message,x,occurrences
+    """Takes the encoding circuit, computes the syndrome and corrects the message.
+    Input: quantum circuit after encoding
+    Returns: decoding circuit, retrieved message, outcomes of measurements, syndrome.
+    """
 ```
 By default, this function will return the full decoding circuit and the retrieved message with the occurences of the measurements. The simulation function used to retrieve the syndrome when calling `get_syndrome(qc)` or `get_qbits(qc)` is:
 
