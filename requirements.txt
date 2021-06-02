@@ -1,0 +1,5 @@
+numpy
+scipy
+unireedsolomon
+matplotlib
+qiskit
