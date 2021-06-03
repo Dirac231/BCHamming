@@ -41,7 +41,7 @@ def HammingCircuit(N, classical_registers=False, name=None, ancillas=None):
     registers=[]
     for i in range(2**N):
         prefix='s' #s stands for signal
-        if i==0 or np.log2(i)==int(np.log2(i)): prefix='p' #c stands for parity
+        if is_power_2(i): prefix='p' #c stands for parity
         registers.append(QuantumRegister(1,prefix+num_to_binary(i, N)))
     if classical_registers!=False: 
         if classical_registers==True: registers.append(ClassicalRegister(2**N + ancillas))
@@ -207,7 +207,7 @@ def HammingRedundant(n):
     N,j=0,0
     #shift the digits in the correct positions for the hamming code
     for i in range(total):
-        if i!=0 and int(np.log2(i))!=np.log2(i):
+        if is_power_2(i) is False:
             N=N+(n&(2**j)==2**j)*(2**i)
             j=j+1
     #puts the parity bit in place except for the global parity bit

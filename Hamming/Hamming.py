@@ -1,6 +1,9 @@
 from Hamming_all import *
 
 
+global x
+x=3
+
 def HammingEncode(n, kind="both", name="Hamming encoder"):
     """Returns a hamming encoding circuit capable of encodig at least n Qbits 
     To see the number of input qubits required for this circuit you can call 
