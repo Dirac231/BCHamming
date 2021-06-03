@@ -22,8 +22,8 @@ noise_model = NoiseModel.from_backend(backend) #zz noise model from real machine
 
 ##zz The following adds custom noise model to the circuit
 # Error probabilities
-##zz prob_1 = 0.001  # 1-qubit gate
-##zz prob_2 = 0.01   # 2-qubit gate
+##zz prob_1 = 0.001  # x error
+##zz prob_2 = 0.01   # depolarizing error
 
 # Depolarizing quantum errors
 ##zz error_1 = noise.depolarizing_error(prob_1, 1)
@@ -59,8 +59,8 @@ k_cl = len(initial_state)      					#Order of the finite field in terms of power
 delta = floor((2**k_cl-1)/2+2)                  #Classical optimal minimum distance of the code
 K = (2**k_cl) - delta                           #Number of classical bits sent, directly related to the error-correcting capability of the code ecc = floor((K+1)/2) 
 ENC = k_cl*(2**k_cl - 1)                        #Total encoding Qbits needed
-encode_reg = QuantumRegister(ENC+2*k_cl*K)		#Quantum Register used to construct the full circuit
-ecc = floor((K+1)/2)								#Maximum error correction capability per symbol
+encode_reg = QuantumRegister(ENC+2*k_cl*K)	#Quantum Register used to construct the full circuit
+ecc = floor((K+1)/2)				#Maximum error correction capability per symbol
 shots = 128
 
 #Initialization of the parameters is completed
