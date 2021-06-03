@@ -8,42 +8,33 @@ from numpy.polynomial import Polynomial
 from qiskit.providers.aer import AerSimulator
 from qiskit.circuit.library import QFT
 from qiskit.visualization import plot_histogram
-from qiskit.providers.aer.noise import NoiseModel #zz noise model 
+from qiskit.providers.aer.noise import NoiseModel
+
+
+#NOISE MODULE
 
 #Needed in order to load the ibm-mps simulator for an optimal simulation
 provider = IBMQ.load_account()
-##zz the following adds the noise model that is based on ibmq_vigo
-##zz backend = provider.get_backend('ibmq_vigo') #zz noise model from real machines
+##the following adds the noise model that is based on ibmq_vigo
 backend = provider.get_backend('ibmq_16_melbourne')
-noise_model = NoiseModel.from_backend(backend) #zz noise model from real machines
+noise_model = NoiseModel.from_backend(backend) #noise model from real machines
 
-# Get coupling map from backend
-##zz coupling_map = backend.configuration().coupling_map #zz noise model from real machines
-
-##zz The following adds custom noise model to the circuit
+##The following adds custom noise model to the circuit
 # Error probabilities
-##zz prob_1 = 0.001  # x error
-##zz prob_2 = 0.01   # depolarizing error
+#prob_1 = 0.001  # x error
+#prob_2 = 0.01   # depolarizing error
 
 # Depolarizing quantum errors
-##zz error_1 = noise.depolarizing_error(prob_1, 1)
-##zz error_2 = noise.depolarizing_error(prob_2, 2)
-##zz error_1 = NoiseModel.depolarizing_error(prob_1, 1)
-##zz error_2 = NoiseModel.depolarizing_error(prob_2, 2)
-
-# Add errors to noise model
-##zz noise_model = noise.NoiseModel()
-##zz noise_model = NoiseModel.NoiseModel()
-##zz noise_model.add_all_qubit_quantum_error(error_1, ['u1', 'u2', 'u3'])
-##zz noise_model.add_all_qubit_quantum_error(error_2, ['cx'])
+#error_1 = noise.depolarizing_error(prob_1, 1)
+#error_2 = noise.depolarizing_error(prob_2, 2)
+#error_1 = NoiseModel.depolarizing_error(prob_1, 1)
+#error_2 = NoiseModel.depolarizing_error(prob_2, 2)
 
 # Get basis gates from noise model
 basis_gates = noise_model.basis_gates
-print("\n", basis_gates)
-##zz basis_gates = ['cx', 'id', 'rz', 'sx', 'x']
 basis_gates = ['cx', 'id', 'u1', 'sx', 'x']
-##zz end of initialization of noise
-print(basis_gates)
+
+#--------------------------------------------------------------------------------------
 
 #PARAMETERS SETUP
 
@@ -52,50 +43,50 @@ print(basis_gates)
 
 #The initial state is read from the file states.txt
 
-initial_state = np.loadtxt('states.txt')
-initial_state = [[1/np.sqrt(2), 1/np.sqrt(2)],[1,0],[0,1]]
-k_cl = len(initial_state)      					#Order of the finite field in terms of powers of 2, corresponds to the amount of qbits sent
+def init_decoder():
+    global initial_state, k_cl, delta, K, ENC, encode_reg, ecc, shots, fourier, inv_fourier,provider
+    provider = IBMQ.load_account()
+    initial_state = np.loadtxt('states.txt')
+    k_cl = len(initial_state)                       #Order of the finite field in terms of powers of 2, corresponds to the amount of qbits sent
 
-delta = floor((2**k_cl-1)/2+2)                  #Classical optimal minimum distance of the code
-K = (2**k_cl) - delta                           #Number of classical bits sent, directly related to the error-correcting capability of the code ecc = floor((K+1)/2) 
-ENC = k_cl*(2**k_cl - 1)                        #Total encoding Qbits needed
-encode_reg = QuantumRegister(ENC+2*k_cl*K)	#Quantum Register used to construct the full circuit
-ecc = floor((K+1)/2)				#Maximum error correction capability per symbol
-shots = 128
+    delta = floor((2**k_cl-1)/2+2)                  #Classical optimal minimum distance of the code
+    K = (2**k_cl) - delta                           #Number of classical bits sent, directly related to the error-correcting capability of the code ecc = floor((K+1)/2) 
+    ENC = k_cl*(2**k_cl - 1)                        #Total encoding Qbits needed
+    encode_reg = QuantumRegister(ENC+2*k_cl*K)      #Quantum Register used to construct the full circuit
+    ecc = floor((K+1)/2)                            #Maximum error correction capability per symbol
+    shots = 128
 
-#Initialization of the parameters is completed
-print("")
-print("Reading from file: found ",k_cl," Qbits: \n")
+    #Initialization of the parameters is completed
+    print("")
+    print("Reading from file: found ",k_cl," Qbits: \n")
 
-print("Parameters of the code: ")
-print("-------------------------------------------")
-print("Encoding Qbits: ", ENC)
-print("Sent Qbits: ", k_cl*(2**k_cl-1-2*K))
-print("Maximum error-correcting: ", ecc, "/Symbol = ", ecc*k_cl, "/Encoded Qbit")
-print("-------------------------------------------")
+    print("Parameters of the code: ")
+    print("-------------------------------------------")
+    print("Encoding Qbits: ", ENC)
+    print("Sent Qbits: ", k_cl*(2**k_cl-1-2*K))
+    print("Maximum error-correcting: ", ecc, "/Symbol = ", ecc*k_cl, "/Encoded Qbit")
+    print("-------------------------------------------")
 
-#--------------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------------------
 
-#QTF IMPLEMENTATION
+    #QTF IMPLEMENTATION
 
-#A quantum fourier transform is used both for encoding and decoding purposes
+    #A quantum fourier transform is used both for encoding and decoding purposes
 
-fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse=False, insert_barriers=False, name='qft')
-inv_fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse=True, insert_barriers=False, name='qft-inverse')
+    fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse=False, insert_barriers=False, name='qft')
+    inv_fourier = QFT(num_qubits=ENC, approximation_degree=0, do_swaps=True, inverse=True, insert_barriers=False, name='qft-inverse')
 
 #-----------------------------------------------------------------------------------
 
 #SIMULATES THE CIRCUIT
 
-def simulate(circ):
+def simulate(qc):
     """Simulates the circuit using the cloud-computing services of IBMq, this is always the recommended choice to run simulations"""
     provider = IBMQ.get_provider(hub='ibm-q')
     backend=provider.get_backend('simulator_mps')
-    #zz result = execute(circ, backend,shots=shots).result()
     result = execute(circ, backend,shots=shots,
-                     #zz coupling_map=coupling_map,
                      basis_gates=basis_gates,
-                     noise_model=noise_model).result() #zz adding noise model to the execuation of the circuit
+                     noise_model=noise_model).result() #add noise module
     print('Simulation Success: {}'.format(result.success))
     print("Time taken: {} sec".format(result.time_taken))
     counts = result.get_counts(0)
@@ -105,38 +96,38 @@ def simulate(circ):
 
 #MEASURE FUNCTIONS
 
-def measure_encoding(circ):
+def measure_encoding(qc):
     """Measure the Qbits used in the encoding, i.e. if the lenght is 3, the first 21 Qbits"""
     cr = ClassicalRegister(ENC, 'encoded')
-    circ.add_register(cr)
+    qc.add_register(cr)
     for i in range(0, ENC):
-        circ.measure(i,cr[i])
-    results = simulate(circ)
+        qc.measure(i,cr[i])
+    results = simulate(qc)
     encoded = max(results, key=results.get)
     return encoded
 
 
-def get_qbits(circ):
-	"""Measure the Qbits with the message, i.e. if the lenght is 3, the first 3 Qbits"""
-	cr = ClassicalRegister(k_cl*(2**k_cl-1-2*K), 'out')
-	circ.add_register(cr)
-	for i in range(0,k_cl):
-		circ.measure(i, cr[i]) 
-	for i in range(k_cl*(K + 1), ENC-k_cl*K):
-		circ.measure(i, cr[i])
-	results = simulate(circ)
-	qbits = max(results, key=results.get)
-	return qbits,results
+def get_qbits(qc):
+    """Measure the Qbits with the message, i.e. if the lenght is 3, the first 3 Qbits"""
+    cr = ClassicalRegister(k_cl*(2**k_cl-1-2*K), 'out')
+    qc.add_register(cr)
+    for i in range(0,k_cl):
+        qc.measure(i, cr[i]) 
+    for i in range(k_cl*(K + 1), ENC-k_cl*K):
+        qc.measure(i, cr[i])
+    results = simulate(qc)
+    qbits = max(results, key=results.get)
+    return qbits,results
 
 
-def get_syndrome(circ):
+def get_syndrome(qc):
     """Measure the Qbits with the syndrome, i.e. if the lenght is 3, the last 18 Qbits"""
     cr = ClassicalRegister(2*k_cl*K)
-    circ.add_register(cr)
+    qc.add_register(cr)
     for i in range(0, 2*k_cl*K):
-        circ.measure(ENC+i,cr[i])
+        qc.measure(ENC+i,cr[i])
     #orders the syndromes in descending order in term of the occurrences
-    ordered_res = {k: v for k, v in sorted(simulate(circ).items(), key=lambda item: item[1])}  
+    ordered_res = {k: v for k, v in sorted(simulate(qc).items(), key=lambda item: item[1])}  
     syndromes = list(ordered_res)[::-1]
     return syndromes
 
@@ -206,8 +197,8 @@ def encoder(initial_state):
 
 #CIRCUIT TO COMPUTE THE SYNDROME
 
-def syn_circuit(qc):
-    """Takes the ecoding circuit and computes the syndrome"""
+def decoder(qc):
+    """Takes the ecoding circuit, computes the syndrome and corrects the message"""
     qc.append(fourier, encode_reg[:ENC])
     for i in range(k_cl+1,k_cl*(K+1)+1):
         qc.cx(i-1, i+ENC-k_cl-1)
@@ -218,47 +209,39 @@ def syn_circuit(qc):
     for i in range(ENC -k_cl*K-1, ENC-1):
         qc.h(i+1)
     qc.append(inv_fourier, encode_reg[:ENC])
-    return qc
-
-
-#CORRECTS THE ERRORS AND RETURNS THE ORIGINAL MESSAGE
-
-def decoder(circ):
-    """Takes the circuits that computes the syndrome (given by syn_circuit) and returns the original message along with occurrences"""
-    syn = get_syndrome(circ)
+    syn = get_syndrome(qc)
     bf,pf,x = error_locator(syn)
     if(bf != "1" or x[:k_cl*K] != "0"*k_cl*K):
         for i in range(len(bf)):
             if (bf[i] == "1"):
-                circ.x(i)
+                qc.x(i)
     if (pf != "1" or x[k_cl*K:] != "0"*k_cl*K):
         for i in range(ENC):
-            circ.h(i)
+            qc.h(i)
 
         for i in range(len(pf)):
             if (pf[i] == "1"):
-                circ.z(i)
+                qc.z(i)
 
         for i in range(ENC):
-            circ.h(i)
-    circ.append(fourier, encode_reg[:ENC])
-    message,occurrences = get_qbits(circ)
+            qc.h(i)
+    qc.append(fourier, encode_reg[:ENC])
+    message,occurrences = get_qbits(qc)
     occurrences = zip([x[:3][::-1] for x in occurrences.keys()] , list(occurrences.values()))
     D = defaultdict(int)
     for k,v in occurrences:
-    	D[k]+= int(v)
+        D[k]+= int(v)
     occurrences = dict(D)
-    return message,x,occurrences
+    return qc,message,x,occurrences
 
 #------------------------------------------------------------------------------------
 
 
 def send_message(initial_state):
     """Auxiliary testing function, sends the message contained in the file states.txt and returns the simulation circuit."""
-    qc = encoder(initial_state)
+    qc = encoder(initial_state)                #Classical optimal minimum distance of the code
     #INSERT ERRORS HERE: (such as qc.x(4) or z-errors)
-    qc = syn_circuit(qc)
-    retrieved,syn,occurrences = decoder(qc)
+    qc,retrieved,syn,occurrences = decoder(qc)
     plot_histogram(occurrences, color='midnightblue', title="Message occurrences").savefig("histogram.png")
     print("Most probable message: ", retrieved[:3][::-1])
     print("Occurrences: ", occurrences)
