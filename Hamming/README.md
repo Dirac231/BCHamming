@@ -2,9 +2,11 @@
 
 This folder contains the implementation and the test of the quantum Hamming code
 
-`Hamming.py`: Module containing the implementation of the encoder and decoder of the Hamming code  
+`Hamming.py`: Module containing `HammingEncode()` and `HammingDecode()` and it's the one well commented
 
-`Hamming_test.ipynb`: Notebook containing the testing of the Hamming code
+`Hamming_all.py`: Module containing all the functions that have been used to make `Hamming.py`
+
+`Hamming_exampe.ipynb`: Example code, go take a look at that to understand how everything works
 
 ## General nomenclature
 
@@ -12,27 +14,8 @@ Suppose you have a message |m> that is long n bits and you want to encode it in 
 
 To do so you have to create a quantum circuit that is big enough to be able to hold |M> and additional ancillas (ancillas are required only for the syndrome).
 
-# How to know how big the circuit needs to be
-
-To know how big has to be the circuit call the function. To so you have to call `HammingSize()`, it gives you the number of qubits that must be present in the circuit
-
-```python
-def HammingSize(n, gate, kind):
-    """Gives you the number of qubits that must be present in the circuit
-    Args:
-        n (int): lenght of the input message
-        gate (str): It's either 'encoder' or 'decoder'
-        kind (str): The kind argument must be one of 'bit', 'phase' or 'both'
-
-    Returns:
-        N (int): Number of qubits required for the circuit
-    """
-```
-Depending on the `gate` and the `kind` the result changes, if you use multiple gates on your circuit be sure to have the circuit at least as big as the biggest gate
-
 
 # How to use the gates
-Once you know how big is the circuit you can use the gates.
 The function `HammingEncode()` returns a hamming encoding capable of encoding n Qbits
 ```python
 def HammingEncode(n, kind="both", name="Hamming encoder"):
@@ -66,3 +49,7 @@ def HammingDecode(n, kind="both", read=True, name="Hamming decoder"):
         gate: Hamming decode
     """
 ```
+
+# How big are theese gates?
+
+Every gate returned by theese two functions has the `size` attribute, and tells how big the gate is
