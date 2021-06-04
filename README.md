@@ -8,8 +8,6 @@ This repository was created for the Europe Qiskit Hackaton 2021. It focuses on r
 
 `REED_SOLOMON\`: Contains the implementation and documentation of the quantum Reed Solomon  
 
-`Papers\`: Papers we found useful to complete the project, they are all open access  
-
 `Slides.pdf`: Slides in pdf format of the Hackaton Project  
 
 `Report.pdf`: Report of the Hackaton Project
