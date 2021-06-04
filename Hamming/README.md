@@ -50,6 +50,6 @@ def HammingDecode(n, kind="both", read=True, name="Hamming decoder"):
     """
 ```
 
-# How big are theese gates?
+# How big are these gates?
 
-Every gate returned by theese two functions has the `size` attribute, and tells how big the gate is
+Every gate returned by these two functions has the `size` attribute, which tells how big the gate is
