@@ -26,4 +26,4 @@ In general the Hamming code should be used when the errors are rare because it c
 
 ## How we divided the work
 
-We used the buit-in method of the github [projects](https://github.com/Dirac231/BCHamming/projects/1) to track and coordinate the work to do.
+We used the buit-in method of the github [projects](https://github.com/Dirac231/BCHamming/projects/1?fullscreen=true) to track and coordinate the work to do.
