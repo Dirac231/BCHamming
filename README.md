@@ -18,14 +18,25 @@ This repository was created for the Europe Qiskit Hackaton 2021. It focuses on r
 
 
 ## Installation and Usage
-To use this package you just have to clone the repository: `git clone https://github.com/Dirac231/BCHamming/`.  
-After cloning, execute `python3 -m pip install -r requirements.txt` which will install all the required packages to run the code.   
+To use this package you just have to clone the repository: 
 
-Now that you have installed the libraries you can take a look at the [wiki](https://github.com/Dirac231/BCHamming/wiki) to learn how to use the Hamming and Reed Solomon error correcting codes.
+```
+git clone https://github.com/Dirac231/BCHamming/
+```
 
-In general the Hamming code should be used when the errors are rare because it can only correct at most two of them.  The Reed Solomon instead can correct more and more errors the longer the message is, but it also needs more qubits to encode the message, so it is the preferred choice for more noisy scenarios.
+After cloning, execute 
 
+```
+python3 -m pip install -r requirements.txt
+```
+
+which will install all the required packages to run the code.   
+
+After installing the libraries you can see the [wiki](https://github.com/Dirac231/BCHamming/wiki) to understand how to use the Hamming and Reed Solomon error correcting codes.
+
+The purpose of the Hamming code is to be used when the errors are uncommon because it can only correct at most two of them.
+The number of errors that the Reed-Solomon code is able to correct is proportional to the lenght of the message, making it the best choice for noisier scenarios.
 
 ## How we divided the work
 
-We used the buit-in method of the github [projects](https://github.com/Dirac231/BCHamming/projects/1?fullscreen=true) to track and coordinate the work to do.
+We used the built-in method of the github [projects](https://github.com/Dirac231/BCHamming/projects/1?fullscreen=true) to track and coordinate the work to do.
