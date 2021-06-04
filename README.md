@@ -17,7 +17,7 @@ This repository was created for the Europe Qiskit Hackaton 2021. It focuses on r
 
 ## Installation and Usage
 To use this package you just have to clone the repository: `git clone https://github.com/Dirac231/BCHamming/`.  
-After cloning, execute `python3 -m pip install -r requirements.txt` this will install all the required packages to run the code.   
+After cloning, execute `python3 -m pip install -r requirements.txt` which will install all the required packages to run the code.   
 
 Now that you have installed the libraries you can take a look at the [wiki](https://github.com/Dirac231/BCHamming/wiki) to learn how to use the Hamming and Reed Solomon error correcting codes.
 
