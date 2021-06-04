@@ -39,4 +39,4 @@ The number of errors that the Reed-Solomon code is able to correct is proportion
 
 ## How we divided the work
 
-We used the built-in method of the github [projects](https://github.com/Dirac231/BCHamming/projects/1?fullscreen=true) to track and coordinate the work to do.
+We used the built-in method of github [projects](https://github.com/Dirac231/BCHamming/projects/1?fullscreen=true) to track and coordinate the work to do.
