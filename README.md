@@ -12,6 +12,8 @@ This repository was created for the Europe Qiskit Hackaton 2021. It focuses on r
 
 `Slides.pdf`: Slides in pdf format of the Hackaton Project  
 
+`Report.pdf`: Report of the Hackaton Project
+
 `requirements.txt`: Required python packages to make the code work
 
 
