@@ -195,7 +195,27 @@ def Hamming_bit_decoder(N,kind='bit',read=True,name='decoder'):
     if read==True: circ.append(ReverseSwapper(N), [*range(2**N)])
     return circ.to_gate(label=name)
 
+def HammingSize(n, gate='decoder', kind='both'):
+    """Gives you the number of qubits that must be present in the circuit
+    Args:
+        n (int): lenght of the input message
+        gate (str): It's either 'encoder' or 'decoder'
+        kind (str): The kind argument must be one of bit, phase or both
 
+    Returns:
+        n (int): Number of qubits required for the circuit
+    """
+    is_valid_input(kind)   
+    N=HammingOrder(n)
+
+    if gate=='encoder':
+        if kind=='both': return 2**(N+1)
+        return 2**N
+    if gate=='decoder':
+        if kind=='both': return 2**(N+1) + 2*N + 1
+        return 2**N + N
+    
+    raise Exception('Gate not valid, the input must be either \'encoder\' or \'decoder\'')
 
 
 # I don't know if these functions are still useful
