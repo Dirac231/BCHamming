@@ -1,6 +1,6 @@
 # Qiskit Hackathon Europe 2021
 
-This repository was created for the Europe Qiskit Hackaton 2021. It focuses on re-purpusing classic error correction code and make it Quantum
+This repository was created for the Europe Qiskit Hackaton 2021. It focuses on re-purpusing classic error correction code and make it Quantum. Click [here](https://github.com/Dirac231/BCHamming/blob/main/Report.pdf) to see the report
 
 ## Folder structure
 
@@ -34,7 +34,3 @@ After installing the libraries you can see the [wiki](https://github.com/Dirac23
 
 The purpose of the Hamming code is to be used when the errors are uncommon because it can only correct at most two of them.
 The number of errors that the Reed-Solomon code is able to correct is proportional to the lenght of the message, making it the best choice for noisier scenarios.
-
-## How we divided the work
-
-We used the built-in method of github [projects](https://github.com/Dirac231/BCHamming/projects/1?fullscreen=true) to track and coordinate the work to do.
