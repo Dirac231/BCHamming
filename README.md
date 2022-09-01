@@ -1,6 +1,6 @@
 # Qiskit Hackathon Europe 2021
 
-This repository was created for the Europe Qiskit Hackaton 2021. It focuses on re-purpusing classic error correction code and make it Quantum. \
+This repository was created for the Europe Qiskit Hackaton 2021. It focuses on building a quantum version of the Hamming code and the BCH model. \
 \
 The official report is available [here](https://github.com/Dirac231/BCHamming/blob/main/Report.pdf)
 
