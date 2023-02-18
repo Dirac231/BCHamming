@@ -4,20 +4,10 @@ This repository was created for the Europe Qiskit Hackaton 2021. \
  \
  The project focuses on building a quantum version of the Hamming code and the BCH model. \
 \
-The official report is available [here](https://github.com/Dirac231/BCHamming/blob/main/Report.pdf)
+The official report is available [**here**](https://github.com/Dirac231/BCHamming/blob/main/Report.pdf)
 
-## Folder structure
-
-`Hamming\`: Contains the implementation and documentation of the quantum Hamming code  
-
-`REED_SOLOMON\`: Contains the implementation and documentation of the quantum Reed Solomon  
-
-`Slides.pdf`: Slides in pdf format of the Hackaton Project  
-
-`Report.pdf`: Report of the Hackaton Project
-
-`requirements.txt`: Required python packages to make the code work
-
+## Abstract
+Quantum error correction protocols are central to the realisation of the power of quantum computing and quantum communication. The goal of this project is to develop and implement quantum versions of the Hamming Code, one of the first efficient classical error correcting code, and of the Reed-Solomon code, as well as to simulate and explore the error correction capacities of the code on quantum computers with error and noise profiles obtained from real quantum computing devices.
 
 ## Installation and Usage
 To use this package you just have to clone the repository: 
@@ -38,3 +28,15 @@ After installing the libraries you can see the [wiki](https://github.com/Dirac23
 
 The purpose of the Hamming code is to be used when the errors are uncommon because it can only correct at most two of them.
 The number of errors that the Reed-Solomon code is able to correct is proportional to the lenght of the message, making it the best choice for noisier scenarios.
+
+## Folder structure
+
+`Hamming\`: Contains the implementation and documentation of the quantum Hamming code  
+
+`REED_SOLOMON\`: Contains the implementation and documentation of the quantum Reed Solomon  
+
+`Slides.pdf`: Slides in pdf format of the Hackaton Project  
+
+`Report.pdf`: Report of the Hackaton Project
+
+`requirements.txt`: Required python packages to make the code work
