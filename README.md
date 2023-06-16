@@ -2,7 +2,7 @@
 
  The project focuses on building a quantum version of the Hamming code and the BCH model. \
 \
-The official report with results is available [**here**](https://github.com/Dirac231/BCHamming/blob/main/Report.pdf)
+The official report and results are available [**here**](https://github.com/Dirac231/BCHamming/blob/main/Report.pdf)
 
 ## Abstract
 Quantum error correction protocols play a crucial role in harnessing the potential of quantum computing and quantum communication systems.\
