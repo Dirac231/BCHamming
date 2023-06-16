@@ -10,24 +10,14 @@ Quantum error correction protocols play a crucial role in harnessing the potenti
 The "BCHamming" project aims to design and implement quantum adaptations of the Hamming and Reed-Solomon codes. We investigate the capabilities of these codes on quantum computers by simulating their performance, using noise profiles derived from actual quantum computing devices through Qiskit.
 
 ## Installation and Usage
-To use this package you just have to clone the repository: 
+To use this package, clone the repository and install dependencies: 
 
 ```
 git clone https://github.com/Dirac231/BCHamming/
-```
-
-After cloning, execute 
-
-```
 python3 -m pip install -r requirements.txt
 ```
 
-which will install all the required packages to run the code.   
-
-After installing the libraries you can see the [wiki](https://github.com/Dirac231/BCHamming/wiki) to understand how to use the Hamming and Reed Solomon error correcting codes.
-
-The purpose of the Hamming code is to be used when the errors are uncommon because it can only correct at most two of them.
-The number of errors that the Reed-Solomon code is able to correct is proportional to the lenght of the message, making it the best choice for noisier scenarios.
+After installation, refer to the [wiki](https://github.com/Dirac231/BCHamming/wiki) to understand how to use/simulate the error correcting codes.
 
 ## Folder structure
 
