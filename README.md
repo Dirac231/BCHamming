@@ -1,13 +1,13 @@
 # Qiskit Hackathon Europe 2021
 
-This repository was created for the Europe Qiskit Hackaton 2021. \
- \
  The project focuses on building a quantum version of the Hamming code and the BCH model. \
 \
-The official report is available [**here**](https://github.com/Dirac231/BCHamming/blob/main/Report.pdf)
+The official report with results is available [**here**](https://github.com/Dirac231/BCHamming/blob/main/Report.pdf)
 
 ## Abstract
-Quantum error correction protocols are central to the realisation of the power of quantum computing and quantum communication. The goal of this project is to develop and implement quantum versions of the Hamming Code, one of the first efficient classical error correcting code, and of the Reed-Solomon code, as well as to simulate and explore the error correction capacities of the code on quantum computers with error and noise profiles obtained from real quantum computing devices.
+Quantum error correction protocols play a crucial role in harnessing the potential of quantum computing and quantum communication systems.\
+\
+The "BCHamming" project aims to design and implement quantum adaptations of the Hamming and Reed-Solomon codes. We investigate the capabilities of these codes on quantum computers by simulating their performance, using noise profiles derived from actual quantum computing devices through Qiskit.
 
 ## Installation and Usage
 To use this package you just have to clone the repository: 
