@@ -33,7 +33,7 @@ The number of errors that the Reed-Solomon code is able to correct is proportion
 
 `Hamming\`: Contains the implementation and documentation of the quantum Hamming code  
 
-`REED_SOLOMON\`: Contains the implementation and documentation of the quantum Reed Solomon  
+`Reed Solomon\`: Contains the implementation and documentation of the quantum Reed Solomon  
 
 `Slides.pdf`: Slides in pdf format of the Hackaton Project  
 
