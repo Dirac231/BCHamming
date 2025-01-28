@@ -1,6 +1,6 @@
 # Qiskit Hackathon Europe 2021
 
- The project focuses on building a quantum version of the Hamming code and the BCH model. \
+ The project focuses on building a quantum version of the Hamming error-correction code and the BCH model. \
 \
 The official report and results are available [**here**](https://github.com/Dirac231/BCHamming/blob/main/Report.pdf)
 
